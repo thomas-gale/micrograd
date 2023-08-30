@@ -35,8 +35,7 @@ plt.show()
 ```
 
 
-    
-![png](output_5_0.png)
+![output_5_0](https://github.com/thomas-gale/micrograd-mojo/assets/11990706/61ee848e-04b0-4b72-98c4-2198f52a29eb)
     
 
 
