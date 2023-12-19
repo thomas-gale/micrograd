@@ -9,6 +9,7 @@ Attempting to follow Andrej's wonderful tutorial and implement in mojo lang (v.2
 - `curl https://get.modular.com | sh - && \
 modular auth ************************************`
 - `modular install mojo`
-- ```export MODULAR_HOME="$HOME/.modular"
+```shell
+export MODULAR_HOME="$HOME/.modular"
 export PATH="$MODULAR_HOME/pkg/packages.modular.com_mojo/bin:$PATH"
 ```
