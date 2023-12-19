@@ -10,6 +10,9 @@
 				"modular-mojotools.vscode-mojo"
 			]
 		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/python:1": {}
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

@@ -14,6 +14,7 @@ struct MyPair:
         print(self.first, self.second)
 
 
+# Traits
 trait SomeTrait:
     fn required_method(self, x: Int):
         pass
@@ -31,17 +32,37 @@ fn fun_with_traits[T: SomeTrait](x: T):
     x.required_method(42)
 
 
-fn main():
-    # try:
-    #     print(greet("World"))
-    #     print(greet("Grok"))
-    #     print(greet("123"))
-    #     print(greet(""))
-    # except:
-    #     print("Error!")
+# Compile-time Parameterized Functions
+fn repeat[count: Int](msg: String):
+    for i in range(count):
+        print(msg)
+
+
+# Using python
+from python import Python
+
+
+fn use_array() raises:
+    # This is equivalent to Python's `import numpy as np`
+    let np = Python.import_module("numpy")
+
+    # Now use numpy as if writing in Python
+    let array = np.array([1, 2, 3])
+    print(array)
+
+
+fn main() raises:
+    # print(greet("World"))
+    # print(greet("Grok"))
+    # print(greet("123"))
+    # print(greet(""))
 
     # let mine = MyPair(2, 4)
     # mine.dump()
 
-    let thing = SomeStruct()
-    fun_with_traits(thing)
+    # let thing = SomeStruct()
+    # fun_with_traits(thing)
+
+    # repeat[3]("Hello")
+
+    use_array()
