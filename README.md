@@ -2,95 +2,21 @@
 
 Attempting to follow Andrej's wonderful tutorial and implement in mojo lang (v.2023-08-24)
 
-### engine.mojo
-
-Derivative of a simple function
-
-
-```mojo
-from math import mul
-from python import Python
-from python.object import PythonObject
-let np = Python.import_module("numpy")
-let plt = Python.import_module("matplotlib.pyplot")
-let colors = Python.import_module("matplotlib.colors")
+## Dev setup
+- Register to get private mojo download command: https://developer.modular.com/download
+- Reopen repo in vscode devcontainers (will create ubuntu 22 environment)
+- `sudo apt install python3.10-venv`
+- `curl https://get.modular.com | sh - && \
+modular auth ************************************`
+- `modular install mojo`
+- ```export MODULAR_HOME="$HOME/.modular"
+export PATH="$MODULAR_HOME/pkg/packages.modular.com_mojo/bin:$PATH"
 ```
 
 
-```mojo
-fn f(x: Float32) -> Float32:
-    return 3*x**2 - 4*x + 5
-```
-
 
 ```mojo
-let xs = np.arange(-5.0, 5.0, 0.25)
-var ys = np.array((), np.float32)
- 
-for x in xs:
-    ys = np.append(ys, f(x.to_float64().cast[DType.float32]()))
 
-plt.plot(xs, ys)
-plt.show()
-```
-
-
-![output_5_0](https://github.com/thomas-gale/micrograd-mojo/assets/11990706/61ee848e-04b0-4b72-98c4-2198f52a29eb)
-    
-
-
-    
-  
-
-
-
-```mojo
-let h = 0.001
-let x = 3.0
-print((f(x+h)-f(x))/h)
-```
-
-    14.001845359802246
-
-
-
-```mojo
-from utils.vector import DynamicVector
-
-struct Value[T: AnyType]:
-    var data: T
-    var _prev: DynamicVector[Self]
-    
-    fn __init__(inout self, data: T):
-        self.data = data
-        self._prev = DynamicVector[Self]()
-    
-    fn __init__(inout self, data: T, prev: DynamicVector[Self]):
-        self.data = data
-        self._prev = prev
-            
-    fn __copyinit__(inout self, existing: Self):
-        self.data = existing.data
-        self._prev = existing._prev
-
-    fn __moveinit__(inout self, owned existing: Self):
-        self.data = existing.data^
-        self._prev = existing._prev
-        
-    fn __add__(self, other: Self) -> Self:
-        var prev = DynamicVector[Self]()
-        prev.push_back(self)
-        prev.push_back(other)
-        return Value(self.data + other.data, [self, other])
-    
-    fn __mul__(self, other: Self) -> Self:
-        var prev = DynamicVector[Self]()
-        prev.push_back(self)
-        prev.push_back(other)
-        return Value(self.data * other.data, [self, other])
-        
-    fn dump(self):
-        print(self.data)
 ```
 
     error: [0;1;31m[1mExpression [86]:40:23: [0m[1minvalid call to 'push_back': method argument #0 cannot bind generic !mlirtype to memory-only type 'Value[T]'
