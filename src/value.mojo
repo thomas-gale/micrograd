@@ -1,7 +1,15 @@
-from utils.vector import DynamicVector
+from collections.vector import DynamicVector
 
 
-struct Value[T: AnyType]:
+trait Numeric(Copyable, Stringable):
+    fn __add__(self, other: Self) -> Self:
+        ...
+
+    fn __mul__(self, other: Self) -> Self:
+        ...
+
+
+struct Value[T: Numeric](CollectionElement):
     var data: T
     var _prev: DynamicVector[Self]
 
@@ -18,7 +26,7 @@ struct Value[T: AnyType]:
         self._prev = existing._prev
 
     fn __moveinit__(inout self, owned existing: Self):
-        self.data = existing.data ^
+        self.data = existing.data
         self._prev = existing._prev
 
     fn __add__(self, other: Self) -> Self:
@@ -36,9 +44,10 @@ struct Value[T: AnyType]:
     fn dump(self):
         print(self.data)
 
+
 fn main():
     let a = Value(2.0, [])
     let b = Value(-3.0, [])
     let c = Value(10.0, [])
-    let d = a*b + c
+    let d = a * b + c
     d.dump()

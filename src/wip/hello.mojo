@@ -17,7 +17,7 @@ struct MyPair:
 # Traits
 trait SomeTrait:
     fn required_method(self, x: Int):
-        pass
+        ...
 
 
 struct SomeStruct(SomeTrait):
@@ -45,10 +45,25 @@ from python import Python
 fn use_array() raises:
     # This is equivalent to Python's `import numpy as np`
     let np = Python.import_module("numpy")
+    let ar = np.arange(15).reshape(3, 5)
+    print(ar)
+    print(ar.shape)
 
-    # Now use numpy as if writing in Python
-    let array = np.array([1, 2, 3])
-    print(array)
+
+# Ownership and Borrowing
+# All values passed into a Mojo def function are owned, by default.
+# All values passed into a Mojo fn function are borrowed, by default.
+fn add(inout x: Int, borrowed y: Int):
+    x += y
+
+
+def mutate(inout y: Int) -> None:
+    y += 1
+
+
+fn take_text(owned text: String):
+    text += "!"
+    print(text)
 
 
 fn main() raises:
@@ -65,4 +80,16 @@ fn main() raises:
 
     # repeat[3]("Hello")
 
-    use_array()
+    # use_array()
+
+    # var a = 1
+    # let b = 2
+    # add(a, b)
+    # print(a)  # Prints 3
+
+    # var x = 1
+    # mutate(x)
+    # print(x)
+
+    # let message: String = "Hello"
+    # take_text(message ^)
