@@ -12,29 +12,26 @@ trait Numeric(Copyable, Stringable):
 
 struct Value[T: Numeric](CollectionElement, Stringable):
     var data: T
-    # var _prev: Pointer[DynamicVector[Self]]
+    var prev: DynamicVector[Self]
 
     fn __init__(inout self, data: T):
         self.data = data
-        # self._prev = Pointer[DynamicVector[Self]]()
-        # self._prev = DynamicVector[Self]()
+        self.prev = DynamicVector[Self]()
 
     fn __init__(inout self, data: T, prev: DynamicVector[Self]):
         self.data = data
-        # self._prev = Pointer[DynamicVector[Self]]()
-        # self._prev = prev
+        self.prev = prev 
 
     fn __copyinit__(inout self, existing: Self):
         self.data = existing.data
-        # self._prev = existing._prev
+        self.prev = existing.prev
 
     fn __moveinit__(inout self, owned existing: Self):
         self.data = existing.data
-        # self._prev = existing._prev
+        self.prev = existing.prev
 
     fn __del__(owned self):
-        # self._prev.clear()
-        pass
+        self.prev.clear()
 
     fn __add__(self, other: Self) -> Self:
         var prev = DynamicVector[Self]()
