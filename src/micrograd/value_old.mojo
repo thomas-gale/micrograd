@@ -1,5 +1,5 @@
 from memory.unsafe import Pointer
-from collections.vector import DynamicVector
+#from collections.vector import DynamicVector
 
 
 # @register_passable("trivial")
@@ -49,15 +49,15 @@ struct Value(Stringable):
     # self.prev = Pointer[DynamicVector[Self]].alloc(1)
     # self.prev = prev
 
-    fn __add__(self, other: Self) -> Self:
-        return Value(self.data.load() + other.data.load())
+    # fn __add__(self, other: Self) -> Self:
+    #     return Value(self.data.load() + other.data.load())
 
-    fn __mul__(self, other: Self) -> Self:
-        return Value(self.data.load() * other.data.load())
+    # fn __mul__(self, other: Self) -> Self:
+    #     return Value(self.data.load() * other.data.load())
 
-    fn __str__(self) -> String:
-        let value = self.data.load()
-        return "Value(data=" + value.__str__() + ", grad=TODO)"
+    # fn __str__(self) -> String:
+    #     let value = self.data.load()
+    #     return "Value(data=" + value.__str__() + ", grad=TODO)"
 
 
 # @value
@@ -74,13 +74,4 @@ struct Value(Stringable):
 #         return str(self.data)
 
 
-fn main() raises:
-    # let empty = List[Value[NumericFloat32]](0)
-    # let a = Value(NumericFloat32(2.0))
-    # let b = Value(NumericFloat32(-3.0))
-    # let c = Value(NumericFloat32(10.0))
-    let a = Value(2.0)
-    let b = Value(-3.0)
-    let c = Value(10.0)
-    let d = a * b + c
-    print(d)
+
