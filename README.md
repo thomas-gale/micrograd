@@ -5,5 +5,11 @@ Attempting to follow Andrej's wonderful tutorial and implement in mojo lang (v.2
 ## Dev setup
 - Register to get private mojo download command: https://developer.modular.com/download
 - Reopen repo in vscode devcontainers (will create ubuntu 22 environment)
-- Follow guide https://docs.modular.com/mojo/manual/get-started
-- `poetry run mojo`
+- Follow guide https://docs.modular.com/mojo/manual/get-started 
+- `make install`
+- ```MOJO_PATH=$(modular config mojo.path) \
+  && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
+  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
+  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
+  && source "$BASHRC"```
+- `make run`

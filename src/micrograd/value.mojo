@@ -1,6 +1,7 @@
 from collections import Set, KeyElement
 from memory.unsafe import Pointer
 
+
 trait Numeric(Copyable, Stringable, Hashable, EqualityComparable):
     fn __add__(self, other: Self) -> Self:
         ...
@@ -8,8 +9,8 @@ trait Numeric(Copyable, Stringable, Hashable, EqualityComparable):
     fn __mul__(self, other: Self) -> Self:
         ...
 
+
 struct Value[T: Numeric](KeyElement, Stringable):
-    # struct Value(KeyElement, Stringable):
     var data: T
     var prev: Set[Self]
 
@@ -20,7 +21,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
     fn __init__(inout self: Self, data: T, owned prev: Set[Self]):
         self.data = data
         self.prev = prev^
-        
 
     fn __copyinit__(inout self: Self, existing: Self):
         self.data = existing.data
@@ -50,8 +50,8 @@ struct Value[T: Numeric](KeyElement, Stringable):
     fn __str__(self: Self) -> String:
         var prev = String()
         for element in self.prev:
-          prev += "\n -> " +  str(element[])
+            prev += "\n -> " + str(element[])
         if len(self.prev) > 0:
-          return "Value: " + str(self.data) + "\nPrev:" + prev
+            return "Value: " + str(self.data) + "\nPrev:" + prev
         else:
-          return "Value: " + str(self.data)
+            return "Value: " + str(self.data)
