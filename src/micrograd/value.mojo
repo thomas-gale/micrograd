@@ -2,7 +2,7 @@ from collections import Set, KeyElement
 from memory.unsafe import Pointer
 
 
-trait Numeric(Copyable, Stringable, Hashable, EqualityComparable):
+trait Numeric(Copyable, Stringable, Hashable, Comparable):
     fn __add__(self, other: Self) -> Self:
         ...
 
@@ -55,3 +55,38 @@ struct Value[T: Numeric](KeyElement, Stringable):
             return "Value: " + str(self.data) + "\nPrev:" + prev
         else:
             return "Value: " + str(self.data)
+
+
+@value
+struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
+    var data: Float32
+
+    fn __add__(self, other: Self) -> Self:
+        return Self(self.data + other.data)
+
+    fn __mul__(self, other: Self) -> Self:
+        return Self(self.data * other.data)
+
+    fn __eq__(self, other: Self) -> Bool:
+        return self.data - other.data < Epsilon
+
+    fn __ne__(self, other: Self) -> Bool:
+        return self.data - other.data >= Epsilon
+
+    fn __lt__(self, other: Self) -> Bool:
+        return self.data < other.data + Epsilon
+
+    fn __le__(self, other: Self) -> Bool:
+        return self.data < other.data + Epsilon
+
+    fn __gt__(self, other: Self) -> Bool:
+        return self.data > other.data - Epsilon
+
+    fn __ge__(self, other: Self) -> Bool:
+        return self.data > other.data - Epsilon
+
+    fn __str__(self) -> String:
+        return str(self.data)
+
+    fn __hash__(self) -> Int:
+        return hash(self.data)
