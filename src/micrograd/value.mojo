@@ -9,6 +9,8 @@ from micrograd.numeric import Numeric
 
 
 struct Value[T: Numeric](KeyElement, Stringable):
+    # TODO: Change to RCs
+    # TODO: No __del__ required as the RCs will handle the memory management and clean up automatically one the ref count reaches 0
     var data: T
     var grad: T
 
@@ -45,6 +47,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self._op = op^
 
     fn __copyinit__(inout self: Self, existing: Self):
+        # TODO: Copy the RCs (increasing their ref counts)
         self.data = existing.data
         self.grad = existing.grad
 
@@ -54,6 +57,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         pass
 
     fn __moveinit__(inout self: Self, owned existing: Self):
+        # TODO: Move the RCs (unchaning their ref counts)
         self.data = existing.data^
         self.grad = existing.grad^
 
@@ -61,6 +65,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self._prev = existing._prev^
         self._op = existing._op^
         pass
+
 
     # fn __add__(inout self, inout other: Self) -> Self:
     #     var out = Self(self.data + other.data, Set[Self](self, other), "+")
@@ -73,9 +78,11 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     return out
 
+    # TODO: Determine if we need to use owned or inout
     fn __add__(owned self, owned other: Self) -> Self:
         var out = Self(self.data + other.data, Set[Self](), "+")
 
+        # TODO: Capture a copy of the self and other RCs
         fn _backward() escaping -> None:
             print("Applying chain rule to addition")
             print("self.grad before: ", self.grad)
@@ -103,6 +110,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(self.data * other.data, Set[Self](), "*")
 
+        # TODO: Capture a copy of the self and other RCs
         fn _backward() escaping -> None:
             print("Applying chain rule to multiplication")
             print("self.grad before: ", self.grad)
@@ -153,6 +161,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
             "ReLU",
         )
 
+        # TODO: Capture a copy of the self.grad RC
         fn _backward():
             print("Applying chain rule to relu")
             print("self.grad before: ", self.grad)
