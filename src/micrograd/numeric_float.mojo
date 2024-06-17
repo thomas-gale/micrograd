@@ -5,8 +5,13 @@ from micrograd.numeric import Numeric
 struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
     var data: Float32
 
-    fn __init__(inout self: Self):
-        self.data = 0.0
+    @staticmethod
+    fn zero() -> Self:
+        return Self(0.0)
+
+    @staticmethod
+    fn one() -> Self:
+        return Self(1.0)
 
     fn __add__(self, other: Self) -> Self:
         return Self(self.data + other.data)

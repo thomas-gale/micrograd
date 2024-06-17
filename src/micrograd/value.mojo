@@ -14,7 +14,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     fn __init__(inout self: Self, owned data: T):
         self.data = data^
-        self.grad = T()
+        self.grad = T.zero()
 
         fn _backward():
             pass
@@ -30,7 +30,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         owned op: String,
     ):
         self.data = data^
-        self.grad = T()
+        self.grad = T.zero()
 
         fn _backward():
             pass
@@ -93,7 +93,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     fn relu(inout self) -> Self:
         var out = Self(
-            T() if self.data < T() else self.data,
+            T.zero() if self.data < T.zero() else self.data,
             Set[Self](
                 self,
             ),
@@ -101,12 +101,31 @@ struct Value[T: Numeric](KeyElement, Stringable):
         )
 
         fn _backward():
-            if out.data > T():
+            if out.data > T.zero():
                 self.grad += out.grad
 
         out._backward = _backward
 
         return out
+
+    # fn backward(self):
+    #     # topological order all of the children in the graph
+    #     var topo = []
+    #     var visited = Set[Self]()
+
+    #     fn build_topo(v: Self):
+    #         if v not in visited:
+    #             visited.add(v)
+    #             for child in v._prev:
+    #                 build_topo(child)
+    #             topo.append(v)
+
+    #     build_topo(self)
+
+    #     # go one variable at a time and apply the chain rule to get its gradient
+    #     self.grad = T.one()
+    #     for v in reversed(topo):
+    #         v._backward()
 
     fn __hash__(self: Self) -> Int:
         return hash(self.data)

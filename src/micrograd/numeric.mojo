@@ -1,5 +1,10 @@
 trait Numeric(Copyable, Stringable, Hashable, Comparable):
-    fn __init__(inout self: Self):
+    @staticmethod
+    fn zero() -> Self:
+        ...
+
+    @staticmethod
+    fn one() -> Self:
         ...
 
     fn __add__(self, other: Self) -> Self:
