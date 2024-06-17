@@ -7,7 +7,8 @@ from micrograd import Value, NumericFloat32
 fn main() raises:
     var a = Value(NumericFloat32(3.53))
     var b = Value(NumericFloat32(4.12))
-    var c = a + b
+    # var c = Value(NumericFloat32(3.53)) + (Value(NumericFloat32(4.12)))
+    var c  = a + b
     var d = Value(NumericFloat32(5.03))
     var e = c * d
     print(e)

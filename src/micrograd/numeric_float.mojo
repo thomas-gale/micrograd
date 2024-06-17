@@ -34,11 +34,14 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
     # fn __pow__(self, other: Self) -> Self:
     #     return Self(self.data**other)
 
+    fn __abs__(self) -> Self:
+        return Self(abs(self.data))
+
     fn __eq__(self, other: Self) -> Bool:
-        return self.data - other.data < Epsilon
+        return abs(self.data - other.data) < Epsilon
 
     fn __ne__(self, other: Self) -> Bool:
-        return self.data - other.data >= Epsilon
+        return abs(self.data - other.data) >= Epsilon
 
     fn __lt__(self, other: Self) -> Bool:
         return self.data < other.data + Epsilon

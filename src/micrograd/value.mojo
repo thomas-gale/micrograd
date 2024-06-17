@@ -8,6 +8,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     var data: T
     var grad: T
 
+    # One defined via an operation, it captures mutable (inout) references to self and other (if applicable)
     var _backward: fn () escaping -> None
     var _prev: Set[Self]
     var _op: String
@@ -68,6 +69,18 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         return out
 
+    # fn __add__(owned self, owned other: Self) -> Self:
+    #     var out = Self(self.data + other.data, Set[Self](), "+")
+
+    #     fn _backward():
+    #         self.grad += out.grad
+    #         other.grad += out.grad
+
+    #     out._backward = _backward
+    #     out._prev = Set[Self](self^, other^)
+
+    # return out
+
     fn __mul__(inout self, inout other: Self) -> Self:
         var out = Self(self.data + other.data, Set[Self](self, other), "*")
 
@@ -108,9 +121,8 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         return out
 
-    # fn backward(self):
-    #     # topological order all of the children in the graph
-    #     var topo = []
+    # fn _build_topo(self: Self) -> Set[Self]:
+    #     var topo = Set[Self]()
     #     var visited = Set[Self]()
 
     #     fn build_topo(v: Self):
@@ -118,14 +130,49 @@ struct Value[T: Numeric](KeyElement, Stringable):
     #             visited.add(v)
     #             for child in v._prev:
     #                 build_topo(child)
-    #             topo.append(v)
+    #             topo.add(v)
 
     #     build_topo(self)
 
-    #     # go one variable at a time and apply the chain rule to get its gradient
-    #     self.grad = T.one()
-    #     for v in reversed(topo):
-    #         v._backward()
+    #     return topo
+
+    fn backward(inout self):
+        # topological order all of the children in the graph
+
+        # This needs to be a mutable list to the actual elements in memory
+        var topo = List[Self]()
+
+        # This can be a set of immutable elements
+
+        var visited = Set[Self]()
+
+        while True:
+            var stack = List[Self]()
+            stack.append(self)
+
+            while len(stack) > 0:
+                var v = stack.pop()
+                if v not in visited:
+                    visited.add(v)
+                    for child in v._prev:
+                        stack.append(child[])
+                    topo.append(v)
+
+            if len(visited) == len(topo):
+                break
+
+        # fn build_topo(v: Self):
+        #     if v not in visited:
+        #         visited.add(v)
+        #         for child in v._prev:
+        #             build_topo(child)
+        #         topo.append(v)
+        # build_topo(self)
+
+        # Go one variable at a time and apply the chain rule to get its gradient
+        self.grad = T.one()
+        for v in reversed(topo):
+            v[]._backward()
 
     fn __hash__(self: Self) -> Int:
         return hash(self.data)

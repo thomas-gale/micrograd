@@ -10,6 +10,9 @@ install:
 run: 
 	poetry run mojo run src/main.mojo
 
+test: 
+	poetry run mojo run src/test.mojo
+
 package:
 	mkdir -p bin
 	poetry run mojo package src/micrograd -o bin/micrograd.mojopkg
