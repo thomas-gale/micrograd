@@ -4,6 +4,18 @@ from testing import assert_true
 from micrograd import Value, NumericFloat32
 
 
+fn test_grad() raises:
+    var a = Value(NumericFloat32(2.0))
+    var b = Value(NumericFloat32(-3.0))
+    var c = Value(NumericFloat32(10.0))
+    var d = a * b + c
+    print(d)
+    d.backward()
+    assert_true(a.grad == NumericFloat32(-3.0))
+    assert_true(b.grad == NumericFloat32(2.0))
+    assert_true(c.grad == NumericFloat32(1.0))
+
+
 fn test_sanity_check() raises:
     var x = Value(NumericFloat32(-4.0))
     var two_1 = Value(NumericFloat32(2.0))
@@ -50,4 +62,5 @@ fn test_sanity_check() raises:
 
 
 fn main() raises:
-    test_sanity_check()
+    test_grad()
+    # test_sanity_check()

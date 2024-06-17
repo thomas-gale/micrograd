@@ -58,37 +58,58 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self._op = existing._op^
         pass
 
-    fn __add__(inout self, inout other: Self) -> Self:
-        var out = Self(self.data + other.data, Set[Self](self, other), "+")
-
-        fn _backward():
-            self.grad += out.grad
-            other.grad += out.grad
-
-        out._backward = _backward
-
-        return out
-
-    # fn __add__(owned self, owned other: Self) -> Self:
-    #     var out = Self(self.data + other.data, Set[Self](), "+")
+    # fn __add__(inout self, inout other: Self) -> Self:
+    #     var out = Self(self.data + other.data, Set[Self](self, other), "+")
 
     #     fn _backward():
     #         self.grad += out.grad
     #         other.grad += out.grad
 
     #     out._backward = _backward
-    #     out._prev = Set[Self](self^, other^)
 
-    # return out
+    #     return out
 
-    fn __mul__(inout self, inout other: Self) -> Self:
-        var out = Self(self.data + other.data, Set[Self](self, other), "*")
+    fn __add__(owned self, owned other: Self) -> Self:
+        var out = Self(self.data + other.data, Set[Self](), "+")
 
         fn _backward():
-            self.grad += other.data * out.grad
-            other.grad += self.data * out.grad
+            print("Applying chain rule to addition")
+            print("self.grad before: ", self.grad)
+            print("other.grad before: ", other.grad)
+            self.grad += out.grad
+            other.grad += out.grad
+            print("self.grad after: ", self.grad)
+            print("other.grad after: ", other.grad)
 
         out._backward = _backward
+        out._prev = Set[Self](self^, other^)
+        return out
+
+    # fn __mul__(inout self, inout other: Self) -> Self:
+    #     var out = Self(self.data + other.data, Set[Self](self, other), "*")
+
+    #     fn _backward():
+    #         self.grad += other.data * out.grad
+    #         other.grad += self.data * out.grad
+
+    #     out._backward = _backward
+
+    #     return out
+
+    fn __mul__(owned self, owned other: Self) -> Self:
+        var out = Self(self.data + other.data, Set[Self](), "*")
+
+        fn _backward():
+            print("Applying chain rule to multiplication")
+            print("self.grad before: ", self.grad)
+            print("other.grad before: ", other.grad)
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
+            print("self.grad after: ", self.grad)
+            print("other.grad after: ", other.grad)
+
+        out._backward = _backward
+        out._prev = Set[Self](self^, other^)
 
         return out
 
@@ -104,20 +125,39 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     return out
 
-    fn relu(inout self) -> Self:
+    # fn relu(inout self) -> Self:
+    #     var out = Self(
+    #         T.zero() if self.data < T.zero() else self.data,
+    #         Set[Self](
+    #             self,
+    #         ),
+    #         "ReLU",
+    #     )
+
+    #     fn _backward():
+    #         if out.data > T.zero():
+    #             self.grad += out.grad
+
+    #     out._backward = _backward
+
+    #     return out
+
+    fn relu(owned self) -> Self:
         var out = Self(
             T.zero() if self.data < T.zero() else self.data,
-            Set[Self](
-                self,
-            ),
+            Set[Self](),
             "ReLU",
         )
 
         fn _backward():
+            print("Applying chain rule to relu")
+            print("self.grad before: ", self.grad)
             if out.data > T.zero():
                 self.grad += out.grad
+            print("self.grad after: ", self.grad)
 
         out._backward = _backward
+        out._prev = Set[Self](self^)
 
         return out
 
@@ -137,6 +177,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     #     return topo
 
     fn backward(inout self):
+        print("\n** Backward pass **\n")
         # topological order all of the children in the graph
 
         # This needs to be a mutable list to the actual elements in memory
@@ -171,7 +212,12 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad = T.one()
-        for v in reversed(topo):
+        print("Value of final node: ", self.data)
+        print("Gradient of final node: ", self.grad)
+        # for v in reversed(topo):
+        for v in topo:
+            print("\n\nApplying chain rule to:\n", v[])
+            print("Gradient of current node: ", v[].grad)
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:
@@ -188,7 +234,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     fn pretty_print(self: Self, indent: Int) -> String:
         if len(self._prev) == 0:
-            return str(self.data)
+            return str(self.data) + " (∇" + str(self.grad) + ")"
 
         var prev = String()
         prev += "\n" + String(" ") * indent + "| " + self._op
@@ -199,4 +245,4 @@ struct Value[T: Numeric](KeyElement, Stringable):
                 + "| "
                 + element[].pretty_print(indent + 1)
             )
-        return str(self.data) + prev
+        return str(self.data) + " (∇" + str(self.grad) + ")" + prev
