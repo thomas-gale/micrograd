@@ -4,14 +4,16 @@ from python.object import PythonObject
 from micrograd.value import Value, NumericFloat32
 
 
-
-
-
 fn main() raises:
-    var a = Value[NumericFloat32[]](NumericFloat32(2.53))
-    var b = Value[NumericFloat32[]](NumericFloat32(4.12))
+    var a = Value(NumericFloat32(3.53))
+    print(a)
+    var b = Value(NumericFloat32(4.12))
     var c = a + b
-    print(c)
+    # print(c)
+    var d = Value(NumericFloat32(5.03))
+    # print(d)
+    var e = c * d
+    print(e)
 
     # import tkinter as tk
     # var tk = Python.import_module("tkinter")
