@@ -4,8 +4,10 @@ from memory.unsafe_pointer import (
     destroy_pointee,
 )
 
+trait CopyableAndMovable(Copyable, Movable):
+    ...
 
-struct RC[T: Movable]:
+struct RC[T: CopyableAndMovable]:
     var ptr: UnsafePointer[T]
     var ref_count: UnsafePointer[Int]
 
@@ -34,3 +36,9 @@ struct RC[T: Movable]:
         if self.ref_count[] <= 0:
             destroy_pointee(self.ptr)
             destroy_pointee(self.ref_count)
+
+    fn get_data_copy(self) -> T:
+        return self.ptr[]
+
+    fn get_ref_count(self) -> Int:
+        return self.ref_count[]
