@@ -1,12 +1,9 @@
 from memory.unsafe_pointer import (
     UnsafePointer,
-    initialize_pointee_copy,
     initialize_pointee_move,
     destroy_pointee,
 )
 
-# trait CopyableAndMoveable(Copyable, Movable):
-#     ...
 
 struct RC[T: Movable]:
     var ptr: UnsafePointer[T]
