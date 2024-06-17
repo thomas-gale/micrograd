@@ -63,5 +63,5 @@ fn test_sanity_check() raises:
 
 fn main() raises:
     rc_tests()
-    # test_grad()
+    test_grad()
     # test_sanity_check()
