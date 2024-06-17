@@ -22,4 +22,11 @@ build:
 	poetry run mojo build src/main.mojo -o bin/micrograd
 
 run-build:
-	./bin/micrograd
+	bin/micrograd
+
+build-test:
+	mkdir -p bin
+	poetry run mojo build src/test.mojo -o bin/microgradtest
+
+run-build-test:
+	bin/microgradtest

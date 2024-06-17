@@ -1,5 +1,9 @@
 from collections import Set, KeyElement
-from memory.unsafe import Pointer
+from memory.unsafe_pointer import (
+    UnsafePointer,
+    initialize_pointee_copy,
+    initialize_pointee_move,
+)
 
 from micrograd.numeric import Numeric
 
@@ -17,7 +21,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self.data = data^
         self.grad = T.zero()
 
-        fn _backward():
+        fn _backward() escaping -> None:
             pass
 
         self._backward = _backward
@@ -53,7 +57,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self.data = existing.data^
         self.grad = existing.grad^
 
-        self._backward = existing._backward
+        self._backward = existing._backward^
         self._prev = existing._prev^
         self._op = existing._op^
         pass
@@ -72,7 +76,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     fn __add__(owned self, owned other: Self) -> Self:
         var out = Self(self.data + other.data, Set[Self](), "+")
 
-        fn _backward():
+        fn _backward() escaping -> None:
             print("Applying chain rule to addition")
             print("self.grad before: ", self.grad)
             print("other.grad before: ", other.grad)
@@ -97,9 +101,9 @@ struct Value[T: Numeric](KeyElement, Stringable):
     #     return out
 
     fn __mul__(owned self, owned other: Self) -> Self:
-        var out = Self(self.data + other.data, Set[Self](), "*")
+        var out = Self(self.data * other.data, Set[Self](), "*")
 
-        fn _backward():
+        fn _backward() escaping -> None:
             print("Applying chain rule to multiplication")
             print("self.grad before: ", self.grad)
             print("other.grad before: ", other.grad)
@@ -176,28 +180,47 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     return topo
 
-    fn backward(inout self):
+    fn backward(owned self):
         print("\n** Backward pass **\n")
+
+        # Mutate self to store the gradient of the final node
+        self.grad = T.one()
+        print("Value of final node: ", self.data)
+        print("Gradient of final node: ", self.grad)
+
         # topological order all of the children in the graph
 
         # This needs to be a mutable list to the actual elements in memory
         var topo = List[Self]()
+
+        # Move self into topo
+        # topo.append(self^)
+
+        # for element in topo:
+        #     print("Element in topo: ", element[])
+
+        # self = topo[0]
 
         # This can be a set of immutable elements
 
         var visited = Set[Self]()
 
         while True:
-            var stack = List[Self]()
-            stack.append(self)
+            var stack = List[UnsafePointer[Self]]()
+            var self_pointer = UnsafePointer[Self].alloc(1)
+            initialize_pointee_move(self_pointer, self)
+            stack.append(self_pointer)
+            # stack.append(self)
 
             while len(stack) > 0:
                 var v = stack.pop()
-                if v not in visited:
-                    visited.add(v)
-                    for child in v._prev:
-                        stack.append(child[])
-                    topo.append(v)
+                if v[] not in visited:
+                    visited.add(v[])
+                    for child in v[]._prev:
+                        var child_pointer = UnsafePointer[Self].alloc(1)
+                        initialize_pointee_move(child_pointer, child[])
+                        stack.append(child_pointer)
+                    topo.append(v[])
 
             if len(visited) == len(topo):
                 break
@@ -211,14 +234,13 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # build_topo(self)
 
         # Go one variable at a time and apply the chain rule to get its gradient
-        self.grad = T.one()
-        print("Value of final node: ", self.data)
-        print("Gradient of final node: ", self.grad)
+
         # for v in reversed(topo):
         for v in topo:
             print("\n\nApplying chain rule to:\n", v[])
             print("Gradient of current node: ", v[].grad)
             v[]._backward()
+            # break
 
     fn __hash__(self: Self) -> Int:
         return hash(self.data)

@@ -9,7 +9,7 @@ fn test_grad() raises:
     var b = Value(NumericFloat32(-3.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
-    print(d)
+    # print(d)
     d.backward()
     assert_true(a.grad == NumericFloat32(-3.0))
     assert_true(b.grad == NumericFloat32(2.0))
