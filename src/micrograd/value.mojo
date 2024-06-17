@@ -9,6 +9,12 @@ from micrograd.numeric import Numeric
 
 
 struct Value[T: Numeric](KeyElement, Stringable):
+    """
+    Value is a reference counted object that holds a node in the computation graph.
+    Use clone() to create deep copies of the graph rooted at this node.
+    Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
+    """
+
     # TODO: Change to RCs
     # TODO: No __del__ required as the RCs will handle the memory management and clean up automatically one the ref count reaches 0
     var data: T
