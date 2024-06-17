@@ -2,7 +2,7 @@ from python import Python
 from testing import assert_true
 
 from micrograd import Value, NumericFloat32
-
+from test import rc_tests 
 
 fn test_grad() raises:
     var a = Value(NumericFloat32(2.0))
@@ -62,5 +62,6 @@ fn test_sanity_check() raises:
 
 
 fn main() raises:
-    test_grad()
+    rc_tests()
+    # test_grad()
     # test_sanity_check()

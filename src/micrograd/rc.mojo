@@ -5,6 +5,8 @@ from memory.unsafe_pointer import (
     destroy_pointee,
 )
 
+# trait CopyableAndMoveable(Copyable, Movable):
+#     ...
 
 struct RC[T: Movable]:
     var ptr: UnsafePointer[T]
@@ -13,7 +15,8 @@ struct RC[T: Movable]:
     fn __init__(inout self, owned data: T):
         self.ptr = UnsafePointer[T].alloc(1)
         initialize_pointee_move(self.ptr, data^)
-        Self.__init__(self, self.ptr)
+        self.ref_count = UnsafePointer[Int].alloc(1)
+        initialize_pointee_move(self.ref_count, 1)
 
     fn __init__(inout self, ptr: UnsafePointer[T]):
         self.ptr = ptr
