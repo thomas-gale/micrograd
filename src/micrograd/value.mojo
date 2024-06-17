@@ -57,15 +57,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self._op = existing._op^
         pass
 
-    fn __hash__(self: Self) -> Int:
-        return hash(self.data)
-
-    fn __eq__(self: Self, other: Self) -> Bool:
-        return self.data == other.data
-
-    fn __ne__(self: Self, other: Self) -> Bool:
-        return self.data != other.data
-
     fn __add__(inout self, inout other: Self) -> Self:
         var out = Self(self.data + other.data, Set[Self](self, other), "+")
 
@@ -77,8 +68,54 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         return out
 
-    fn __mul__(self, other: Self) -> Self:
-        return Self(self.data * other.data, Set[Self](self, other), "*")
+    fn __mul__(inout self, inout other: Self) -> Self:
+        var out = Self(self.data + other.data, Set[Self](self, other), "*")
+
+        fn _backward():
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
+
+        out._backward = _backward
+
+        return out
+
+    # fn __pow__(inout self, owned other: T) -> Self:
+    #     var out = Self(
+    #         self.data**other, Set[Self](self), "**" + String(other)
+    #     )
+
+    #     fn _backward():
+    #         self.grad += (other * self.data ** (other - 1)) * out.grad
+
+    #     out._backward = _backward
+
+    #     return out
+
+    fn relu(inout self) -> Self:
+        var out = Self(
+            T() if self.data < T() else self.data,
+            Set[Self](
+                self,
+            ),
+            "ReLU",
+        )
+
+        fn _backward():
+            if out.data > T():
+                self.grad += out.grad
+
+        out._backward = _backward
+
+        return out
+
+    fn __hash__(self: Self) -> Int:
+        return hash(self.data)
+
+    fn __eq__(self: Self, other: Self) -> Bool:
+        return self.data == other.data
+
+    fn __ne__(self: Self, other: Self) -> Bool:
+        return self.data != other.data
 
     fn __str__(self: Self) -> String:
         return self.pretty_print(0)

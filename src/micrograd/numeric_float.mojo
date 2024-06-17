@@ -14,11 +14,20 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
     fn __iadd__(inout self: Self, other: Self):
         self.data += other.data
 
+    fn __sub__(self, other: Self) -> Self:
+        return Self(self.data - other.data)
+
+    fn __isub__(inout self: Self, other: Self):
+        self.data -= other.data
+
     fn __mul__(self, other: Self) -> Self:
         return Self(self.data * other.data)
 
     fn __imul__(inout self: Self, other: Self):
         self.data *= other.data
+
+    # fn __pow__(self, other: Self) -> Self:
+    #     return Self(self.data**other)
 
     fn __eq__(self, other: Self) -> Bool:
         return self.data - other.data < Epsilon
