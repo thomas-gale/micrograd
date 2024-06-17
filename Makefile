@@ -11,7 +11,7 @@ run:
 	poetry run mojo run src/main.mojo
 
 test: 
-	poetry run mojo run src/run_test.mojo
+	poetry run mojo run src/tests.mojo
 
 package:
 	mkdir -p bin
