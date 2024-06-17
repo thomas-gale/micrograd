@@ -43,7 +43,22 @@ fn test_rc_multiple_refs() raises:
     )
 
 
+fn move_into_test(owned rc: RC[Float32]) raises:
+    assert_almost_equal(
+        rc.get_data_copy(), 42.42, msg="RC data not initialized correctly"
+    )
+    assert_equal(
+        rc.get_ref_count(), 1, msg="RC ref_count not initialized correctly"
+    )
+
+
+fn test_rc_move() raises:
+    var rc = RC[Float32](42.42)
+    move_into_test(rc^)
+
+
 fn rc_tests() raises:
-    # test_rc_init_data()
-    # test_rc_init_ptr()
+    test_rc_init_data()
+    test_rc_init_ptr()
     test_rc_multiple_refs()
+    test_rc_move()
