@@ -26,7 +26,7 @@ run-build:
 
 build-test:
 	mkdir -p bin
-	poetry run mojo build src/test.mojo -o bin/microgradtest
+	poetry run mojo build src/tests.mojo -o bin/microgradtest
 
 run-build-test:
 	bin/microgradtest

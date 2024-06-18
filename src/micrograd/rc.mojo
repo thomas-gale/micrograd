@@ -4,8 +4,10 @@ from memory.unsafe_pointer import (
     destroy_pointee,
 )
 
+
 trait CopyableAndMovable(Copyable, Movable):
     ...
+
 
 struct RC[T: CopyableAndMovable]:
     var ptr: UnsafePointer[T]
@@ -23,6 +25,9 @@ struct RC[T: CopyableAndMovable]:
         initialize_pointee_move(self.ref_count, 1)
 
     fn __copyinit__(inout self, existing: Self):
+        # Mojo approach would like this to create a deep copy
+        # Instead we will use a dedicated clone method for that.
+
         self.ptr = existing.ptr
         self.ref_count = existing.ref_count
         self.ref_count[] += 1

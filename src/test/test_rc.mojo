@@ -28,7 +28,7 @@ fn test_rc_init_ptr() raises:
 
 fn test_rc_multiple_refs() raises:
     var rc = RC(42.42)
-    var rc2 = rc
+    var rc2 = rc  # Point at the same data
 
     assert_equal(rc.ptr, rc2.ptr, msg="RC data ptrs not the same")
     assert_almost_equal(
@@ -37,7 +37,7 @@ fn test_rc_multiple_refs() raises:
     assert_equal(
         rc.get_ref_count(), 2, msg="RC ref_count not initialized correctly"
     )
-
+    # Mojo will have cleaned up rc here.
     assert_equal(
         rc2.get_ref_count(), 1, msg="RC ref_count not initialized correctly"
     )
@@ -57,8 +57,26 @@ fn test_rc_move() raises:
     move_into_test(rc^)
 
 
-fn rc_tests() raises:
+# fn test_rc_capture() raises:
+#     var rc = RC[Float32](8.8)
+
+#     fn capture() escaping:
+#         var rc2 = rc
+#         print()
+#         # assert_almost_equal(
+#         #     rc2.get_data_copy(), 8.8, msg="RC data not initialized correctly"
+#         # )
+#         # assert_equal(
+#         #     rc2.get_ref_count(), 2, msg="RC ref_count not initialized correctly"
+#         # )
+
+
+#     pass
+
+
+fn all_test_rc() raises:
     test_rc_init_data()
     test_rc_init_ptr()
     test_rc_multiple_refs()
     test_rc_move()
+    # test_rc_capture()

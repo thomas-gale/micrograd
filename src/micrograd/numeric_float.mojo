@@ -3,6 +3,10 @@ from micrograd.numeric import Numeric
 
 @value
 struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
+    """
+    Note: Epsilon change is a strictly different type.
+    """
+
     var data: Float32
 
     @staticmethod
