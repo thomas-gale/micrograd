@@ -14,29 +14,47 @@ struct RC[T: CopyableAndMovable]:
     var ref_count: UnsafePointer[Int]
 
     fn __init__(inout self, owned data: T):
+        """
+        Create a new RC with the given data (which can be transferred to the RC).
+        """
         self.ptr = UnsafePointer[T].alloc(1)
         initialize_pointee_move(self.ptr, data^)
         self.ref_count = UnsafePointer[Int].alloc(1)
         initialize_pointee_move(self.ref_count, 1)
 
-    fn __init__(inout self, ptr: UnsafePointer[T]):
+    fn __init__(inout self, owned ptr: UnsafePointer[T]):
+        """
+        Create a new RC with the given pointer to the data.
+        """
         self.ptr = ptr
         self.ref_count = UnsafePointer[Int].alloc(1)
         initialize_pointee_move(self.ref_count, 1)
 
-    fn __copyinit__(inout self, existing: Self):
-        # Mojo approach would like this to create a deep copy
-        # Instead we will use a dedicated clone method for that.
+    fn clone(self) -> Self:
+        """
+        Create a deep copy of the data and returns a new RC.
+        """
+        return Self(self.get_data_copy())
 
+    fn __copyinit__(inout self, existing: Self):
+        """
+        Create a shallow copy of the data and returns a new RC with the same data and incremented ref count.
+        """
         self.ptr = existing.ptr
         self.ref_count = existing.ref_count
         self.ref_count[] += 1
 
     fn __moveinit__(inout self, owned existing: Self):
+        """
+        Move the data from the existing RC to the new RC.
+        """
         self.ptr = existing.ptr
         self.ref_count = existing.ref_count
 
     fn __del__(owned self):
+        """
+        On destruction, decrement the ref count and destroy the data if the ref count reaches 0.
+        """
         self.ref_count[] -= 1
         if self.ref_count[] <= 0:
             destroy_pointee(self.ptr)
