@@ -1,4 +1,6 @@
-trait Numeric(Copyable, Stringable, Hashable, Comparable):
+from micrograd.traits import CopyableAndMovable
+
+trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
     @staticmethod
     fn zero() -> Self:
         ...

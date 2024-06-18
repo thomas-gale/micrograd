@@ -1,3 +1,0 @@
-trait Comparable:
-    fn __lt__(self, other: Self) -> Bool:
-        ...

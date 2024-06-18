@@ -5,7 +5,9 @@ from memory.unsafe_pointer import (
     initialize_pointee_move,
 )
 
-from micrograd.numeric import Numeric
+from micrograd import Numeric
+from micrograd import RC
+from micrograd.copy_move_list import CopyMoveList
 
 
 struct Value[T: Numeric](KeyElement, Stringable):
@@ -15,55 +17,51 @@ struct Value[T: Numeric](KeyElement, Stringable):
     Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
     """
 
-    # TODO: Change to RCs
-    # TODO: No __del__ required as the RCs will handle the memory management and clean up automatically one the ref count reaches 0
-    var data: T
-    var grad: T
+    var data: RC[T]
+    var grad: RC[T]
 
     # One defined via an operation, it captures mutable (inout) references to self and other (if applicable)
     var _backward: fn () escaping -> None
-    var _prev: Set[Self]
+    var _prev: RC[CopyMoveList[Self]]
     var _op: String
 
     fn __init__(inout self: Self, owned data: T):
-        self.data = data^
-        self.grad = T.zero()
+        self.data = RC(data^)
+        self.grad = RC(T.zero())
 
         fn _backward() escaping -> None:
             pass
 
         self._backward = _backward
-        self._prev = Set[Self]()
+        self._prev = RC(CopyMoveList[Self]())
         self._op = ""
 
     fn __init__(
         inout self: Self,
         owned data: T,
-        owned prev: Set[Self],
+        owned prev: CopyMoveList[Self],
         owned op: String,
     ):
-        self.data = data^
-        self.grad = T.zero()
+        self.data = RC(data^)
+        self.grad = RC(T.zero())
 
         fn _backward():
             pass
 
         self._backward = _backward
-        self._prev = prev^
+        self._prev = RC(prev^)
         self._op = op^
 
     fn __copyinit__(inout self: Self, existing: Self):
-        # TODO: Copy the RCs (increasing their ref counts)
         self.data = existing.data
         self.grad = existing.grad
 
         self._backward = existing._backward
-        self._prev = Set[Self](existing._prev)
+        self._prev = existing._prev
         self._op = existing._op
         pass
 
     fn __moveinit__(inout self: Self, owned existing: Self):
-        # TODO: Move the RCs (unchaning their ref counts)
         self.data = existing.data^
         self.grad = existing.grad^
 
@@ -72,34 +70,33 @@ struct Value[T: Numeric](KeyElement, Stringable):
         self._op = existing._op^
         pass
 
-
-    # fn __add__(inout self, inout other: Self) -> Self:
-    #     var out = Self(self.data + other.data, Set[Self](self, other), "+")
-
-    #     fn _backward():
-    #         self.grad += out.grad
-    #         other.grad += out.grad
-
-    #     out._backward = _backward
-
-    #     return out
-
-    # TODO: Determine if we need to use owned or inout
     fn __add__(owned self, owned other: Self) -> Self:
-        var out = Self(self.data + other.data, Set[Self](), "+")
+        """
+        We use owned so that when rvalue references are passed in, we can automatically move the data out of the Value object.
+        """
+        var out = Self(
+            self.data.get_data_copy() + other.data.get_data_copy(),
+            CopyMoveList[Self](),
+            "+",
+        )
 
         # TODO: Capture a copy of the self and other RCs
         fn _backward() escaping -> None:
             print("Applying chain rule to addition")
-            print("self.grad before: ", self.grad)
-            print("other.grad before: ", other.grad)
-            self.grad += out.grad
-            other.grad += out.grad
-            print("self.grad after: ", self.grad)
-            print("other.grad after: ", other.grad)
+            print("self.grad before: ", self.grad.ptr[])
+            print("other.grad before: ", other.grad.ptr[])
+            self.grad.ptr[] += out.grad.ptr[]
+            other.grad.ptr[] += out.grad.ptr[]
+            print("self.grad after: ", self.grad.ptr[])
+            print("other.grad after: ", other.grad.ptr[])
+
+            # Explicit lifetime management
+            _ = self.grad
+            _ = other.grad
+            _ = out.grad
 
         out._backward = _backward
-        out._prev = Set[Self](self^, other^)
+        out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
     # fn __mul__(inout self, inout other: Self) -> Self:
@@ -114,21 +111,24 @@ struct Value[T: Numeric](KeyElement, Stringable):
     #     return out
 
     fn __mul__(owned self, owned other: Self) -> Self:
-        var out = Self(self.data * other.data, Set[Self](), "*")
+        var out = Self(
+            self.data.get_data_copy() * other.data.get_data_copy(),
+            CopyMoveList[Self](),
+            "*",
+        )
 
         # TODO: Capture a copy of the self and other RCs
         fn _backward() escaping -> None:
             print("Applying chain rule to multiplication")
-            print("self.grad before: ", self.grad)
-            print("other.grad before: ", other.grad)
-            self.grad += other.data * out.grad
-            other.grad += self.data * out.grad
-            print("self.grad after: ", self.grad)
-            print("other.grad after: ", other.grad)
+            print("self.grad before: ", self.grad.ptr[])
+            print("other.grad before: ", other.grad.ptr[])
+            self.grad.ptr[] += other.data.ptr[] * out.grad.ptr[]
+            other.grad.ptr[] += self.data.ptr[] * out.grad.ptr[]
+            print("self.grad after: ", self.grad.ptr[])
+            print("other.grad after: ", other.grad.ptr[])
 
         out._backward = _backward
-        out._prev = Set[Self](self^, other^)
-
+        out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
     # fn __pow__(inout self, owned other: T) -> Self:
@@ -160,25 +160,25 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     return out
 
-    fn relu(owned self) -> Self:
-        var out = Self(
-            T.zero() if self.data < T.zero() else self.data,
-            Set[Self](),
-            "ReLU",
-        )
+    # fn relu(owned self) -> Self:
+    #     var out = Self(
+    #         T.zero() if self.data < T.zero() else self.data,
+    #         Set[Self](),
+    #         "ReLU",
+    #     )
 
-        # TODO: Capture a copy of the self.grad RC
-        fn _backward():
-            print("Applying chain rule to relu")
-            print("self.grad before: ", self.grad)
-            if out.data > T.zero():
-                self.grad += out.grad
-            print("self.grad after: ", self.grad)
+    #     # TODO: Capture a copy of the self.grad RC
+    #     fn _backward():
+    #         print("Applying chain rule to relu")
+    #         print("self.grad before: ", self.grad)
+    #         if out.data > T.zero():
+    #             self.grad += out.grad
+    #         print("self.grad after: ", self.grad)
 
-        out._backward = _backward
-        out._prev = Set[Self](self^)
+    #     out._backward = _backward
+    #     out._prev = Set[Self](self^)
 
-        return out
+    #     return out
 
     # fn _build_topo(self: Self) -> Set[Self]:
     #     var topo = Set[Self]()
@@ -200,8 +200,8 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         # Mutate self to store the gradient of the final node
         self.grad = T.one()
-        print("Value of final node: ", self.data)
-        print("Gradient of final node: ", self.grad)
+        print("Value of final node: ", self.data.ptr[])
+        print("Gradient of final node: ", self.grad.ptr[])
 
         # topological order all of the children in the graph
 
@@ -209,7 +209,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         var topo = List[Self]()
 
         # Move self into topo
-        # topo.append(self^)
+        topo.append(self^)
 
         # for element in topo:
         #     print("Element in topo: ", element[])
@@ -220,25 +220,25 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         var visited = Set[Self]()
 
-        while True:
-            var stack = List[UnsafePointer[Self]]()
-            var self_pointer = UnsafePointer[Self].alloc(1)
-            initialize_pointee_move(self_pointer, self)
-            stack.append(self_pointer)
-            # stack.append(self)
+        # while True:
+        #     var stack = List[UnsafePointer[Self]]()
+        #     var self_pointer = UnsafePointer[Self].alloc(1)
+        #     initialize_pointee_move(self_pointer, self)
+        #     stack.append(self_pointer)
+        #     # stack.append(self)
 
-            while len(stack) > 0:
-                var v = stack.pop()
-                if v[] not in visited:
-                    visited.add(v[])
-                    for child in v[]._prev:
-                        var child_pointer = UnsafePointer[Self].alloc(1)
-                        initialize_pointee_move(child_pointer, child[])
-                        stack.append(child_pointer)
-                    topo.append(v[])
+        #     while len(stack) > 0:
+        #         var v = stack.pop()
+        #         if v[] not in visited:
+        #             visited.add(v[])
+        #             for child in v[]._prev:
+        #                 var child_pointer = UnsafePointer[Self].alloc(1)
+        #                 initialize_pointee_move(child_pointer, child[])
+        #                 stack.append(child_pointer)
+        #             topo.append(v[])
 
-            if len(visited) == len(topo):
-                break
+        #     if len(visited) == len(topo):
+        #         break
 
         # fn build_topo(v: Self):
         #     if v not in visited:
@@ -253,33 +253,33 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # for v in reversed(topo):
         for v in topo:
             print("\n\nApplying chain rule to:\n", v[])
-            print("Gradient of current node: ", v[].grad)
+            print("Gradient of current node: ", v[].grad.ptr[])
             v[]._backward()
             # break
 
     fn __hash__(self: Self) -> Int:
-        return hash(self.data)
+        return hash(self.data.ptr[])
 
     fn __eq__(self: Self, other: Self) -> Bool:
-        return self.data == other.data
+        return self.data.ptr[] == other.data.ptr[]
 
     fn __ne__(self: Self, other: Self) -> Bool:
-        return self.data != other.data
+        return self.data.ptr[] != other.data.ptr[]
 
     fn __str__(self: Self) -> String:
         return self.pretty_print(0)
 
     fn pretty_print(self: Self, indent: Int) -> String:
-        if len(self._prev) == 0:
-            return str(self.data) + " (∇" + str(self.grad) + ")"
+        if len(self._prev.ptr[].data) == 0:
+            return str(self.data.ptr[]) + " (∇" + str(self.grad.ptr[]) + ")"
 
         var prev = String()
         prev += "\n" + String(" ") * indent + "| " + self._op
-        for element in self._prev:
+        for element in self._prev.ptr[].data:
             prev += (
                 "\n"
                 + String(" ") * indent
                 + "| "
                 + element[].pretty_print(indent + 1)
             )
-        return str(self.data) + " (∇" + str(self.grad) + ")" + prev
+        return str(self.data.ptr[]) + " (∇" + str(self.grad.ptr[]) + ")" + prev

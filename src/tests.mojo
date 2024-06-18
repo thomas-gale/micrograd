@@ -7,4 +7,4 @@ from test import all_test_rc, all_test_value
 
 fn main() raises:
     all_test_rc()
-    # all_test_value()
+    all_test_value()

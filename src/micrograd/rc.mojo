@@ -5,8 +5,7 @@ from memory.unsafe_pointer import (
 )
 
 
-trait CopyableAndMovable(Copyable, Movable):
-    ...
+from micrograd.traits import CopyableAndMovable
 
 
 struct RC[T: CopyableAndMovable]:
