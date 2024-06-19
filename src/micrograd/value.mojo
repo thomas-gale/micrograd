@@ -122,28 +122,21 @@ struct Value[T: Numeric](KeyElement, Stringable):
             ) * out.grad.ptr[]
 
         out._backward = _backward
-
         return out
 
-    # fn relu(owned self) -> Self:
-    #     var out = Self(
-    #         T.zero() if self.data < T.zero() else self.data,
-    #         Set[Self](),
-    #         "ReLU",
-    #     )
+    fn relu(owned self) -> Self:
+        var out = Self(
+            T.zero() if self.data.ptr[] < T.zero() else self.data.ptr[],
+            CopyMoveList[Self](self),
+            "ReLU",
+        )
 
-    #     # TODO: Capture a copy of the self.grad RC
-    #     fn _backward():
-    #         print("Applying chain rule to relu")
-    #         print("self.grad before: ", self.grad)
-    #         if out.data > T.zero():
-    #             self.grad += out.grad
-    #         print("self.grad after: ", self.grad)
+        fn _backward():
+            if out.data.ptr[] > T.zero():
+                self.grad.ptr[] += out.grad.ptr[]
 
-    #     out._backward = _backward
-    #     out._prev = Set[Self](self^)
-
-    #     return out
+        out._backward = _backward
+        return out
 
     fn backward(owned self):
         print("\n** Backward pass **\n")
