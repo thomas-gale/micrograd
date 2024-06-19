@@ -7,6 +7,8 @@ from memory.unsafe_pointer import (
 
 from micrograd import Numeric
 from micrograd import RC
+
+from micrograd.numeric_float import NumericFloat32
 from micrograd.copy_move_list import CopyMoveList
 
 
@@ -75,7 +77,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         We use owned so that when rvalue references are passed in, we can automatically move the data out of the Value object.
         """
         var out = Self(
-            self.data.get_data_copy() + other.data.get_data_copy(),
+            self.data.ptr[] + other.data.ptr[],
             CopyMoveList[Self](),
             "+",
         )
@@ -88,9 +90,12 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
+    fn __add__(owned self, owned scalar: Scalar) -> Self:
+        return self + Value(T.from_scalar(scalar))
+
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(
-            self.data.get_data_copy() * other.data.get_data_copy(),
+            self.data.ptr[] * other.data.ptr[],
             CopyMoveList[Self](),
             "*",
         )
@@ -103,17 +108,22 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
-    # fn __pow__(inout self, owned other: T) -> Self:
-    #     var out = Self(
-    #         self.data**other, Set[Self](self), "**" + String(other)
-    #     )
+    fn __mul__(owned self, owned scalar: Scalar) -> Self:
+        return self * Value(T.from_scalar(scalar))
 
-    #     fn _backward():
-    #         self.grad += (other * self.data ** (other - 1)) * out.grad
+    fn __pow__(inout self, owned exp: Float32) -> Self:
+        var out = Self(
+            self.data.ptr[] ** exp, CopyMoveList[Self](self), "**" + String(exp)
+        )
 
-    #     out._backward = _backward
+        fn _backward():
+            self.grad.ptr[] += (
+                T.from_scalar(exp) * (self.data.ptr[] ** (exp - 1))
+            ) * out.grad.ptr[]
 
-    #     return out
+        out._backward = _backward
+
+        return out
 
     # fn relu(owned self) -> Self:
     #     var out = Self(
@@ -155,7 +165,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
-            print("\nApplying chain rule to:\n", v[]) # Debugging
+            print("\nApplying chain rule to:\n", v[])  # Debugging
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:

@@ -1,5 +1,6 @@
 from micrograd.traits import CopyableAndMovable
 
+
 trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
     @staticmethod
     fn zero() -> Self:
@@ -7,6 +8,10 @@ trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
 
     @staticmethod
     fn one() -> Self:
+        ...
+
+    @staticmethod
+    fn from_scalar(scalar: Scalar) -> Self:
         ...
 
     fn __add__(self, other: Self) -> Self:
@@ -27,5 +32,5 @@ trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
     fn __imul__(inout self: Self, other: Self):
         ...
 
-    # fn __pow__(self, other: Self) -> Self:
-    #     ...
+    fn __pow__(self, other: Float32) -> Self:
+        ...

@@ -17,6 +17,10 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
     fn one() -> Self:
         return Self(1.0)
 
+    @staticmethod
+    fn from_scalar(scalar: Scalar) -> Self:
+        return Self(Float32(scalar))
+
     fn __add__(self, other: Self) -> Self:
         return Self(self.data + other.data)
 
@@ -35,8 +39,8 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
     fn __imul__(inout self: Self, other: Self):
         self.data *= other.data
 
-    # fn __pow__(self, other: Self) -> Self:
-    #     return Self(self.data**other)
+    fn __pow__(self, exp: Float32) -> Self:
+        return Self(self.data**exp)
 
     fn __abs__(self) -> Self:
         return Self(abs(self.data))
