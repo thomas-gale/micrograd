@@ -9,6 +9,7 @@ fn test_grad() raises:
     var b = Value(NumericFloat32(-3.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
+    print("** Forward pass **")
     print(d)
     d.backward()
     assert_equal(a.grad.get_data_copy(), NumericFloat32(-3.0))

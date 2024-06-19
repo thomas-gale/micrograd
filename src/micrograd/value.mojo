@@ -197,65 +197,26 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     fn backward(owned self):
         print("\n** Backward pass **\n")
-
-        # Mutate self to store the gradient of the final node
-        self.grad = T.one()
-        print("Value of final node: ", self.data.ptr[])
-        print("Gradient of final node: ", self.grad.ptr[])
-
-        # topological order all of the children in the graph
-
-        # This needs to be a mutable list to the actual elements in memory
+        # topological order all of the children in the graph (iterative impl)
         var topo = List[Self]()
-
-        # Move self into topo
-        topo.append(self^)
-
-        # for element in topo:
-        #     print("Element in topo: ", element[])
-
-        # self = topo[0]
-
-        # This can be a set of immutable elements
-
         var visited = Set[Self]()
+        var stack = List[Self]()
+        stack.append(self)
+        while not len(stack) == 0:
+            var current = stack.pop()
 
-        # while True:
-        #     var stack = List[UnsafePointer[Self]]()
-        #     var self_pointer = UnsafePointer[Self].alloc(1)
-        #     initialize_pointee_move(self_pointer, self)
-        #     stack.append(self_pointer)
-        #     # stack.append(self)
+            if current not in visited:
+                visited.add(current)
+                topo.append(current)
+                for child in current._prev.ptr[].data:
+                    if child[] not in visited:
+                        stack.append(child[])
 
-        #     while len(stack) > 0:
-        #         var v = stack.pop()
-        #         if v[] not in visited:
-        #             visited.add(v[])
-        #             for child in v[]._prev:
-        #                 var child_pointer = UnsafePointer[Self].alloc(1)
-        #                 initialize_pointee_move(child_pointer, child[])
-        #                 stack.append(child_pointer)
-        #             topo.append(v[])
-
-        #     if len(visited) == len(topo):
-        #         break
-
-        # fn build_topo(v: Self):
-        #     if v not in visited:
-        #         visited.add(v)
-        #         for child in v._prev:
-        #             build_topo(child)
-        #         topo.append(v)
-        # build_topo(self)
-
-        # Go one variable at a time and apply the chain rule to get its gradient
-
-        # for v in reversed(topo):
+        # go one variable at a time and apply the chain rule to get its gradient
+        self.grad.ptr[] = T.one()
         for v in topo:
-            print("\n\nApplying chain rule to:\n", v[])
-            print("Gradient of current node: ", v[].grad.ptr[])
+            print("\nApplying chain rule to:\n", v[])
             v[]._backward()
-            # break
 
     fn __hash__(self: Self) -> Int:
         return hash(self.data.ptr[])
