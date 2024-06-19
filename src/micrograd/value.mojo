@@ -80,35 +80,13 @@ struct Value[T: Numeric](KeyElement, Stringable):
             "+",
         )
 
-        # TODO: Capture a copy of the self and other RCs
         fn _backward() escaping -> None:
-            print("Applying chain rule to addition")
-            print("self.grad before: ", self.grad.ptr[])
-            print("other.grad before: ", other.grad.ptr[])
             self.grad.ptr[] += out.grad.ptr[]
             other.grad.ptr[] += out.grad.ptr[]
-            print("self.grad after: ", self.grad.ptr[])
-            print("other.grad after: ", other.grad.ptr[])
-
-            # Explicit lifetime management
-            _ = self.grad
-            _ = other.grad
-            _ = out.grad
 
         out._backward = _backward
         out._prev = CopyMoveList[Self](data=List(self, other))
         return out
-
-    # fn __mul__(inout self, inout other: Self) -> Self:
-    #     var out = Self(self.data + other.data, Set[Self](self, other), "*")
-
-    #     fn _backward():
-    #         self.grad += other.data * out.grad
-    #         other.grad += self.data * out.grad
-
-    #     out._backward = _backward
-
-    #     return out
 
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(
@@ -117,15 +95,9 @@ struct Value[T: Numeric](KeyElement, Stringable):
             "*",
         )
 
-        # TODO: Capture a copy of the self and other RCs
-        fn _backward() escaping -> None:
-            print("Applying chain rule to multiplication")
-            print("self.grad before: ", self.grad.ptr[])
-            print("other.grad before: ", other.grad.ptr[])
+        fn _backward():
             self.grad.ptr[] += other.data.ptr[] * out.grad.ptr[]
             other.grad.ptr[] += self.data.ptr[] * out.grad.ptr[]
-            print("self.grad after: ", self.grad.ptr[])
-            print("other.grad after: ", other.grad.ptr[])
 
         out._backward = _backward
         out._prev = CopyMoveList[Self](data=List(self, other))
@@ -138,23 +110,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     fn _backward():
     #         self.grad += (other * self.data ** (other - 1)) * out.grad
-
-    #     out._backward = _backward
-
-    #     return out
-
-    # fn relu(inout self) -> Self:
-    #     var out = Self(
-    #         T.zero() if self.data < T.zero() else self.data,
-    #         Set[Self](
-    #             self,
-    #         ),
-    #         "ReLU",
-    #     )
-
-    #     fn _backward():
-    #         if out.data > T.zero():
-    #             self.grad += out.grad
 
     #     out._backward = _backward
 
@@ -180,31 +135,16 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
     #     return out
 
-    # fn _build_topo(self: Self) -> Set[Self]:
-    #     var topo = Set[Self]()
-    #     var visited = Set[Self]()
-
-    #     fn build_topo(v: Self):
-    #         if v not in visited:
-    #             visited.add(v)
-    #             for child in v._prev:
-    #                 build_topo(child)
-    #             topo.add(v)
-
-    #     build_topo(self)
-
-    #     return topo
-
     fn backward(owned self):
         print("\n** Backward pass **\n")
-        # topological order all of the children in the graph (iterative impl)
+        # topological order all of the children in the graph
         var topo = List[Self]()
         var visited = Set[Self]()
+        # iterative implementation
         var stack = List[Self]()
         stack.append(self)
         while not len(stack) == 0:
             var current = stack.pop()
-
             if current not in visited:
                 visited.add(current)
                 topo.append(current)
@@ -215,7 +155,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
-            print("\nApplying chain rule to:\n", v[])
+            print("\nApplying chain rule to:\n", v[]) # Debugging
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:
