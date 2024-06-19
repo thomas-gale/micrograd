@@ -9,6 +9,10 @@ from micrograd.traits import CopyableAndMovable
 
 
 struct RC[T: CopyableAndMovable]:
+    """
+    Experimental, non-thread-safe reference counted pointer.
+    """
+
     var ptr: UnsafePointer[T]
     var ref_count: UnsafePointer[Int]
 

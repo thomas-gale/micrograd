@@ -15,7 +15,7 @@ from micrograd.copy_move_list import CopyMoveList
 struct Value[T: Numeric](KeyElement, Stringable):
     """
     Value is a reference counted object that holds a node in the computation graph.
-    Use clone() to create deep copies of the graph rooted at this node.
+    TODO: add a clone() which can create deep copies of the graph rooted at this node.
     Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
     """
 
@@ -137,7 +137,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
         return out
 
     fn backward(owned self):
-        print("\n** Backward pass **\n")
         # topological order all of the children in the graph
         var topo = List[Self]()
         var visited = Set[Self]()

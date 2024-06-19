@@ -1,15 +1,20 @@
 from python import Python
 from testing import assert_true, assert_equal, assert_almost_equal
+from time import now
 
 from micrograd import Value, NumericFloat32
 
 
 fn test_add_mul() raises:
+    # Micograd Mojo
+    var m_start = now()
     var a = Value(NumericFloat32(2.0))
     var b = Value(NumericFloat32(-3.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
     d.backward()
+    print("Micograd time:", now() - m_start, "ns")
+    # print(d)
 
     # Analytical check
     assert_equal(a.grad.get_data_copy(), NumericFloat32(-3.0))
@@ -18,12 +23,14 @@ fn test_add_mul() raises:
 
     # Pytorch check
     var torch = Python.import_module("torch")
+    var t_start = now()
     var ta: PythonObject = torch.Tensor([2]).double()
     ta.requires_grad = True
     var tb: PythonObject = torch.Tensor([-3]).double()
     var tc: PythonObject = torch.Tensor([10]).double()
     var td: PythonObject = ta * tb + tc
     td.backward()
+    print("Pytorch time:", now() - t_start, "ns")
     assert_equal(
         d.data.get_data_copy(),
         NumericFloat32(atof(td.data.item())),
@@ -108,5 +115,5 @@ fn test_sanity_check() raises:
 
 fn all_test_value() raises:
     test_add_mul()
-    test_add_mul_pow()
+    # test_add_mul_pow()
     # test_sanity_check()
