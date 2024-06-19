@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "micrograd-mojo"
+name = "micrograd"
 version = "0.1.0"
-description = "Attempting to follow Andrej's wonderful tutorial and implement in mojo lang"
+description = "Attempting to follow Andrej's wonderful tutorial and implement in mojo lang (this poetry package is non-installed and is just for managaing the python deps)"
 authors = ["Thomas Gale <mail@thomasjamesgale.com>"]
 license = "MIT"
 readme = "README.md"
