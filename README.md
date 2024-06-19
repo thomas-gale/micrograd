@@ -1,15 +1,14 @@
-# [Micrograd](https://youtu.be/VMj-3S1tku0?si=EpDtCDZ-rv9ClTwC) [Mojo](https://docs.modular.com/mojo/)
+## 🔥Micrograd 🔥
+Attempting to follow Andrej Karpathy's wonderful [tutorial](https://youtu.be/VMj-3S1tku0?si=EpDtCDZ-rv9ClTwC) and implement [micrograd](https://github.com/karpathy/micrograd) in [mojo](https://docs.modular.com/mojo/).
+This implmentation attempts to closely follow the structure of the original code with a few minor deviations
+- Recursive topoligical sort in `_backward` as iterative.
+- Mojo details: Internal `data`, `grad` and `_prev` use a custom and very basic `RC` (reference counting pointer)
+- Mojo details: Attempting to use `traits` to make `Value` as `generic` as possible (we introduce a `trait` called `Numeric` which is basically a type constraint on what is needed on an 'autogradable' type which can be wrapped by our `Value`
 
-Attempting to follow Andrej's wonderful tutorial and implement in mojo lang (v.2023-08-24)
-
-## Dev setup
-- Register to get private mojo download command: https://developer.modular.com/download
-- Reopen repo in vscode devcontainers (will create ubuntu 22 environment)
-- Follow guide https://docs.modular.com/mojo/manual/get-started 
+### Dev setup
+- Follow guide https://docs.modular.com/mojo/manual/get-started
+- Opionally use the `devcontaier`
 - `make install`
-- ```MOJO_PATH=$(modular config mojo.path) \
-  && BASHRC=$( [ -f "$HOME/.bash_profile" ] && echo "$HOME/.bash_profile" || echo "$HOME/.bashrc" ) \
-  && echo 'export MODULAR_HOME="'$HOME'/.modular"' >> "$BASHRC" \
-  && echo 'export PATH="'$MOJO_PATH'/bin:$PATH"' >> "$BASHRC" \
-  && source "$BASHRC"```
+- `make test`
 - `make run`
+- `make ...` (see `MakeFile`)
