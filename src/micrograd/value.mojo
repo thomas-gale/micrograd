@@ -78,7 +78,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         """
         var out = Self(
             self.data.ptr[] + other.data.ptr[],
-            CopyMoveList[Self](),
+            CopyMoveList[Self](data=List(self, other)),
             "+",
         )
 
@@ -87,7 +87,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
             other.grad.ptr[] += out.grad.ptr[]
 
         out._backward = _backward
-        out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
     fn __add__(owned self, owned scalar: Scalar) -> Self:
@@ -96,7 +95,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(
             self.data.ptr[] * other.data.ptr[],
-            CopyMoveList[Self](),
+            CopyMoveList[Self](data=List(self, other)),
             "*",
         )
 
@@ -105,7 +104,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
             other.grad.ptr[] += self.data.ptr[] * out.grad.ptr[]
 
         out._backward = _backward
-        out._prev = CopyMoveList[Self](data=List(self, other))
         return out
 
     fn __mul__(owned self, owned scalar: Scalar) -> Self:
