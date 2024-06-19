@@ -1,7 +1,6 @@
 .PHONY: install run test
 
 install:
-	@echo "Installing dependencies (for docker/bash)..."
 	pipx install poetry
 	poetry install --no-root
 	curl -s https://get.modular.com | sh -
