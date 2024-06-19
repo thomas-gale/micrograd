@@ -89,8 +89,8 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._backward = _backward
         return out
 
-    fn __add__(owned self, owned scalar: Scalar) -> Self:
-        return self + Value(T.from_scalar(scalar))
+    # fn __add__(owned self, owned scalar: Scalar) -> Self:
+    #     return self + Value(T.from_scalar(scalar))
 
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(
@@ -106,8 +106,8 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._backward = _backward
         return out
 
-    fn __mul__(owned self, owned scalar: Scalar) -> Self:
-        return self * Value(T.from_scalar(scalar))
+    # fn __mul__(owned self, owned scalar: Scalar) -> Self:
+    #     return self * Value(T.from_scalar(scalar))
 
     fn __pow__(inout self, owned exp: Float32) -> Self:
         var out = Self(
@@ -156,7 +156,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
-            print("\nApplying chain rule to:\n", v[])  # Debugging
+            # print("\nApplying chain rule to:\n", v[])  # Debugging
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:

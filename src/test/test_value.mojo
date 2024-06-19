@@ -4,13 +4,11 @@ from testing import assert_true, assert_equal, assert_almost_equal
 from micrograd import Value, NumericFloat32
 
 
-fn test_grad() raises:
+fn test_add_mul() raises:
     var a = Value(NumericFloat32(2.0))
     var b = Value(NumericFloat32(-3.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
-    print("** Forward pass **")
-    print(d)
     d.backward()
 
     # Analytical check
@@ -26,11 +24,44 @@ fn test_grad() raises:
     var tc: PythonObject = torch.Tensor([10]).double()
     var td: PythonObject = ta * tb + tc
     td.backward()
-    assert_true(
-        d.data.get_data_copy() == NumericFloat32(atof(td.data.item())), "Forward pass disagrees with Pytorch"
+    assert_equal(
+        d.data.get_data_copy(),
+        NumericFloat32(atof(td.data.item())),
+        msg="Forward pass disagrees with Pytorch",
     )
-    assert_true(
-        a.grad.get_data_copy() == NumericFloat32(atof(ta.grad.item())), "Backward pass disagrees with Pytorch"
+    assert_equal(
+        a.grad.get_data_copy(),
+        NumericFloat32(atof(ta.grad.item())),
+        msg="Backward pass disagrees with Pytorch",
+    )
+
+
+fn test_add_mul_pow() raises:
+    var a = Value(NumericFloat32(2.0))
+    var b = Value(NumericFloat32(-3.0))
+    var c = Value(NumericFloat32(10.0))
+    var d = a * b + c
+    var e = d**2
+    e.backward()
+
+    # Pytorch check
+    var torch = Python.import_module("torch")
+    var ta: PythonObject = torch.Tensor([2]).double()
+    ta.requires_grad = True
+    var tb: PythonObject = torch.Tensor([-3]).double()
+    var tc: PythonObject = torch.Tensor([10]).double()
+    var td: PythonObject = ta * tb + tc
+    var te: PythonObject = td**2
+    te.backward()
+    assert_equal(
+        e.data.get_data_copy(),
+        NumericFloat32(atof(te.data.item())),
+        msg="Forward pass disagrees with Pytorch",
+    )
+    assert_equal(
+        a.grad.get_data_copy(),
+        NumericFloat32(atof(ta.grad.item())),
+        msg="Backward pass disagrees with Pytorch",
     )
 
 
@@ -76,5 +107,6 @@ fn test_sanity_check() raises:
 
 
 fn all_test_value() raises:
-    test_grad()
+    test_add_mul()
+    test_add_mul_pow()
     # test_sanity_check()
