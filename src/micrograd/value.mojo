@@ -142,9 +142,10 @@ struct Value[T: Numeric](KeyElement, Stringable):
             var current = stack.pop()
             if current not in visited:
                 visited.add(current)
+                # Note, is this topological sort correct
+                topo.append(current)
                 for child in current._prev.ptr[].data:
                     stack.append(child[])
-                topo.append(current)
 
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
