@@ -11,6 +11,10 @@ trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
         ...
 
     @staticmethod
+    fn epsilon() -> Float32:
+        ...
+
+    @staticmethod
     fn from_float32(float: Float32) -> Self:
         ...
 

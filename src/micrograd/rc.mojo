@@ -58,8 +58,10 @@ struct RC[T: CopyableAndMovable]:
         """
         On destruction, decrement the ref count and destroy the data if the ref count reaches 0.
         """
+        # print("Decrement Ref: " + str(self.ptr))
         self.ref_count[] -= 1
         if self.ref_count[] <= 0:
+            # print("Destroying RC: " + str(self.ptr))
             destroy_pointee(self.ptr)
             destroy_pointee(self.ref_count)
 

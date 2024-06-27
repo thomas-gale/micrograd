@@ -74,7 +74,7 @@ fn test_add_mul_pow() raises:
 
 fn test_add_mul_relu() raises:
     var a = Value(NumericFloat32(2.0))
-    var b = Value(NumericFloat32(-6.0))
+    var b = Value(NumericFloat32(6.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
     var e = d.relu()
@@ -84,7 +84,7 @@ fn test_add_mul_relu() raises:
     var torch = Python.import_module("torch")
     var ta: PythonObject = torch.Tensor([2]).double()
     ta.requires_grad = True
-    var tb: PythonObject = torch.Tensor([-6]).double()
+    var tb: PythonObject = torch.Tensor([6]).double()
     var tc: PythonObject = torch.Tensor([10]).double()
     var td: PythonObject = ta * tb + tc
     var te: PythonObject = td.relu()
@@ -109,13 +109,7 @@ fn test_sanity_check() raises:
     var h = (z * z).relu()
     var y = h + q + (q * x)
     y.backward()
-    var xmg = x
-    var ymg = y
 
-    print(ymg.data.get_data_copy())
-    print(xmg.grad.get_data_copy())
-
-    # Pytorch
     var torch = Python.import_module("torch")
     var tx: PythonObject = torch.Tensor([-4.0]).double()
     tx.requires_grad = True
@@ -126,19 +120,16 @@ fn test_sanity_check() raises:
     var th = (tz * tz).relu()
     var ty = th + tq + (tq * tx)
     ty.backward()
-    var xpt = tx
-    var ypt = ty
 
-    print(ypt.data.item())
-    print(xpt.grad.item())
-
-    # forward pass went well
-    assert_true(
-        ymg.data.get_data_copy() == NumericFloat32(atof(ypt.data.item()))
+    assert_equal(
+        y.data.get_data_copy(),
+        NumericFloat32(atof(ty.data.item())),
+        msg="Forward pass disagrees with Pytorch",
     )
-    # backward pass went well
-    assert_true(
-        xmg.grad.get_data_copy() == NumericFloat32(atof(xpt.grad.item()))
+    assert_equal(
+        x.grad.get_data_copy(),
+        NumericFloat32(atof(tx.grad.item())),
+        msg="Backward pass disagrees with Pytorch",
     )
 
 

@@ -18,6 +18,10 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
         return Self(1.0)
 
     @staticmethod
+    fn epsilon() -> Float32:
+        return Epsilon
+
+    @staticmethod
     fn from_float32(val: Float32) -> Self:
         return Self(val)
 
@@ -52,16 +56,16 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
         return abs(self.data - other.data) >= Epsilon
 
     fn __lt__(self, other: Self) -> Bool:
-        return self.data < other.data + Epsilon
+        return self.data < other.data
 
     fn __le__(self, other: Self) -> Bool:
-        return self.data < other.data + Epsilon
+        return self.data < other.data
 
     fn __gt__(self, other: Self) -> Bool:
-        return self.data > other.data - Epsilon
+        return self.data > other.data
 
     fn __ge__(self, other: Self) -> Bool:
-        return self.data > other.data - Epsilon
+        return self.data > other.data
 
     fn __str__(self) -> String:
         return str(self.data)

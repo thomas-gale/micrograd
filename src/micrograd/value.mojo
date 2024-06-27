@@ -15,8 +15,9 @@ from micrograd.copy_move_list import CopyMoveList
 struct Value[T: Numeric](KeyElement, Stringable):
     """
     Value is a reference counted object that holds a node in the computation graph.
-    TODO: add a clone() which can create deep copies of the graph rooted at this node.
+    Value using reference semantics for equality (e.g pointer equality not data equality).
     Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
+    TODO: add a clone() which can create deep copies of the graph rooted at this node.
     """
 
     var data: RC[T]
@@ -82,7 +83,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
             "+",
         )
 
-        fn _backward() escaping -> None:
+        fn _backward():
             self.grad.ptr[] += out.grad.ptr[]
             other.grad.ptr[] += out.grad.ptr[]
 
@@ -103,7 +104,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._backward = _backward
         return out
 
-    fn __pow__(inout self, owned exp: Float32) -> Self:
+    fn __pow__(owned self, owned exp: Float32) -> Self:
         var out = Self(
             self.data.ptr[] ** exp, CopyMoveList[Self](self), "**" + String(exp)
         )
@@ -141,12 +142,11 @@ struct Value[T: Numeric](KeyElement, Stringable):
             var current = stack.pop()
             if current not in visited:
                 visited.add(current)
-                topo.append(current)
                 for child in current._prev.ptr[].data:
-                    if child[] not in visited:
-                        stack.append(child[])
+                    stack.append(child[])
+                topo.append(current)
 
-        # go one variable at a time and apply the chain rule to get its gradient
+        # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
             # print("\nApplying chain rule to:\n", v[])  # Debugging
@@ -156,10 +156,16 @@ struct Value[T: Numeric](KeyElement, Stringable):
         return hash(self.data.ptr[])
 
     fn __eq__(self: Self, other: Self) -> Bool:
-        return self.data.ptr[] == other.data.ptr[]
+        """
+        Value using reference semantics for equality (e.g pointer equality not data equality).
+        """
+        return self.data.ptr == other.data.ptr and self.grad.ptr == other.grad.ptr
 
     fn __ne__(self: Self, other: Self) -> Bool:
-        return self.data.ptr[] != other.data.ptr[]
+        """
+        Value using reference semantics for equality (e.g pointer equality not data equality).
+        """
+        return self.data.ptr != other.data.ptr and self.grad.ptr != other.grad.ptr
 
     fn __str__(self: Self) -> String:
         return self.pretty_print(0)
