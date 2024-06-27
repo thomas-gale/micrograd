@@ -160,13 +160,17 @@ struct Value[T: Numeric](KeyElement, Stringable):
         """
         Value using reference semantics for equality (e.g pointer equality not data equality).
         """
-        return self.data.ptr == other.data.ptr and self.grad.ptr == other.grad.ptr
+        return (
+            self.data.ptr == other.data.ptr and self.grad.ptr == other.grad.ptr
+        )
 
     fn __ne__(self: Self, other: Self) -> Bool:
         """
         Value using reference semantics for equality (e.g pointer equality not data equality).
         """
-        return self.data.ptr != other.data.ptr and self.grad.ptr != other.grad.ptr
+        return (
+            self.data.ptr != other.data.ptr and self.grad.ptr != other.grad.ptr
+        )
 
     fn __str__(self: Self) -> String:
         return self.pretty_print(0)
