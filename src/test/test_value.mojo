@@ -72,6 +72,35 @@ fn test_add_mul_pow() raises:
     )
 
 
+fn test_add_mul_relu() raises:
+    var a = Value(NumericFloat32(2.0))
+    var b = Value(NumericFloat32(-6.0))
+    var c = Value(NumericFloat32(10.0))
+    var d = a * b + c
+    var e = d.relu()
+    e.backward()
+
+    # Pytorch check
+    var torch = Python.import_module("torch")
+    var ta: PythonObject = torch.Tensor([2]).double()
+    ta.requires_grad = True
+    var tb: PythonObject = torch.Tensor([-6]).double()
+    var tc: PythonObject = torch.Tensor([10]).double()
+    var td: PythonObject = ta * tb + tc
+    var te: PythonObject = td.relu()
+    te.backward()
+    assert_equal(
+        e.data.get_data_copy(),
+        NumericFloat32(atof(te.data.item())),
+        msg="Forward pass disagrees with Pytorch",
+    )
+    assert_equal(
+        a.grad.get_data_copy(),
+        NumericFloat32(atof(ta.grad.item())),
+        msg="Backward pass disagrees with Pytorch",
+    )
+
+
 fn test_sanity_check() raises:
     # Micograd
     var x = Value(NumericFloat32(-4.0))
@@ -116,4 +145,5 @@ fn test_sanity_check() raises:
 fn all_test_value() raises:
     test_add_mul()
     test_add_mul_pow()
+    test_add_mul_relu()
     # test_sanity_check()
