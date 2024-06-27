@@ -89,9 +89,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._backward = _backward
         return out
 
-    # fn __add__(owned self, owned scalar: Scalar) -> Self:
-    #     return self + Value(T.from_scalar(scalar))
-
     fn __mul__(owned self, owned other: Self) -> Self:
         var out = Self(
             self.data.ptr[] * other.data.ptr[],
@@ -106,9 +103,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
         out._backward = _backward
         return out
 
-    # fn __mul__(owned self, owned scalar: Scalar) -> Self:
-    #     return self * Value(T.from_scalar(scalar))
-
     fn __pow__(inout self, owned exp: Float32) -> Self:
         var out = Self(
             self.data.ptr[] ** exp, CopyMoveList[Self](self), "**" + String(exp)
@@ -116,7 +110,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
 
         fn _backward():
             self.grad.ptr[] += (
-                T.from_scalar(exp) * (self.data.ptr[] ** (exp - 1))
+                T.from_float32(exp) * (self.data.ptr[] ** (exp - 1))
             ) * out.grad.ptr[]
 
         out._backward = _backward

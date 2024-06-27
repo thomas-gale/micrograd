@@ -11,7 +11,7 @@ trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
         ...
 
     @staticmethod
-    fn from_scalar(scalar: Scalar) -> Self:
+    fn from_float32(float: Float32) -> Self:
         ...
 
     fn __add__(self, other: Self) -> Self:

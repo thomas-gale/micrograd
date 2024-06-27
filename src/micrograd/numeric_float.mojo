@@ -18,8 +18,8 @@ struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
         return Self(1.0)
 
     @staticmethod
-    fn from_scalar(scalar: Scalar) -> Self:
-        return Self(Float32(scalar))
+    fn from_float32(val: Float32) -> Self:
+        return Self(val)
 
     fn __add__(self, other: Self) -> Self:
         return Self(self.data + other.data)

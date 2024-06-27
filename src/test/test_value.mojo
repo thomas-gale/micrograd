@@ -115,5 +115,5 @@ fn test_sanity_check() raises:
 
 fn all_test_value() raises:
     test_add_mul()
-    # test_add_mul_pow()
+    test_add_mul_pow()
     # test_sanity_check()
