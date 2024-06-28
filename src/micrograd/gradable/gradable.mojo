@@ -1,7 +1,7 @@
 from micrograd.traits import CopyableAndMovable
 
 
-trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
+trait Gradable(CopyableAndMovable, Stringable, Hashable, Comparable):
     @staticmethod
     fn zero() -> Self:
         ...
@@ -38,3 +38,4 @@ trait Numeric(CopyableAndMovable, Stringable, Hashable, Comparable):
 
     fn __pow__(self, other: Float32) -> Self:
         ...
+

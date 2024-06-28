@@ -1,8 +1,8 @@
-from micrograd.numeric import Numeric
+from micrograd.gradable import Gradable
 
 
 @value
-struct NumericFloat32[Epsilon: Float32 = 1e-8](Numeric):
+struct GradFloat32[Epsilon: Float32 = 1e-8](Gradable):
     """
     Note: Epsilon change is a strictly different type.
     """

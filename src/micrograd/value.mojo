@@ -5,14 +5,13 @@ from memory.unsafe_pointer import (
     initialize_pointee_move,
 )
 
-from micrograd import Numeric
 from micrograd import RC
+from micrograd import Gradable
 
-from micrograd.numeric_float import NumericFloat32
 from micrograd.copy_move_list import CopyMoveList
 
 
-struct Value[T: Numeric](KeyElement, Stringable):
+struct Value[T: Gradable](KeyElement, Stringable):
     """
     Value is a reference counted object that holds a node in the computation graph.
     Value using reference semantics for equality (e.g pointer equality not data equality).
