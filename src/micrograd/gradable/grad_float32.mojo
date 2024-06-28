@@ -50,9 +50,15 @@ struct GradFloat32[Epsilon: Float32 = 1e-8](Gradable):
         return Self(abs(self.data))
 
     fn __eq__(self, other: Self) -> Bool:
+        """
+        Performs an almost equal comparison (within epsilon).
+        """
         return abs(self.data - other.data) < Epsilon
 
     fn __ne__(self, other: Self) -> Bool:
+        """
+        Performs an almost not equal comparison (within epsilon).
+        """
         return abs(self.data - other.data) >= Epsilon
 
     fn __lt__(self, other: Self) -> Bool:

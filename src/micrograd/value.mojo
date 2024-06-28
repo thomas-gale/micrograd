@@ -6,7 +6,7 @@ from memory.unsafe_pointer import (
 )
 
 from micrograd import RC
-from micrograd import Gradable
+from micrograd import Gradable, GradFloat32
 
 from micrograd.copy_move_list import CopyMoveList
 
@@ -169,6 +169,32 @@ struct Value[T: Gradable](KeyElement, Stringable):
         return (
             self.data.ptr != other.data.ptr and self.grad.ptr != other.grad.ptr
         )
+
+    fn __neg__(owned self: Self) -> Self: 
+        return self * Self(T.from_float32(-1))
+
+    fn __radd__(owned self: Self, owned other: Self) -> Self:
+        return self + other
+
+    fn __iadd__(owned self: Self, owned other: Self):
+        var out = self + other
+        self = out
+        # self.data += other.data
+
+    fn __sub__(owned self: Self, owned other: Self) -> Self:
+        return self + (-other)
+
+    fn __rsub__(owned self: Self, owned other: Self) -> Self:
+        return other + (-self)
+
+    fn __rmul__(owned self: Self, owned other: Self) -> Self: 
+        return self * other
+
+    fn __truediv__(owned self: Self, owned other: Self) -> Self: 
+        return self * other**-1
+
+    fn __rtruediv__(owned self: Self, owned other: Self) -> Self: 
+        return other * self**-1
 
     fn __str__(self: Self) -> String:
         return self.pretty_print(0)
