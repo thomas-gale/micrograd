@@ -110,8 +110,14 @@ fn test_add_mul_relu() raises:
     var b = Value(NumericFloat32(6.0))
     # var c = Value(NumericFloat32(10.0))
     var d = a * b
-    var d1 = d
-    var e = d.relu() * d1.relu()
+
+    var d1 = d.relu()
+
+    # Works
+    var e = d1 * d1
+    # Doesn't work
+    # var e = d.relu() * d.relu()
+
     e.backward()
 
     print(e)
