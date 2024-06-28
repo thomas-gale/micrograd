@@ -18,7 +18,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
     Value using reference semantics for equality (e.g pointer equality not data equality).
     Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
     TODO: add a clone() which can create deep copies of the graph rooted at this node.
-    TODO: add support for diamond graphs e.g. resnet (multiple parents to a node). Currently the graph has to be a DAG Tree.
     """
 
     var data: RC[T]
@@ -136,17 +135,16 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # topological order all of the children in the graph
         var topo = List[Self]()
         var visited = Set[Self]()
-        # iterative implementation
-        var stack = List[Self]()
-        stack.append(self)
-        while not len(stack) == 0:
-            var current = stack.pop()
+        # iterative implementation of bfs
+        var queue = List[Self]()
+        queue.append(self)
+        while not len(queue) == 0:
+            var current = queue.pop(0)
             if current not in visited:
                 visited.add(current)
                 topo.append(current)
                 for child in current._prev.ptr[].data:
-                    if child[] not in visited:
-                        stack.append(child[])
+                    queue.append(child[])
 
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()

@@ -7,14 +7,11 @@ from micrograd import Value, NumericFloat32
 
 fn test_add_mul() raises:
     # Micograd Mojo
-    var m_start = now()
     var a = Value(NumericFloat32(2.0))
     var b = Value(NumericFloat32(-3.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
     d.backward()
-    print("Micograd time:", now() - m_start, "ns")
-    # print(d)
 
     # Analytical check
     assert_equal(a.grad.get_data_copy(), NumericFloat32(-3.0))
@@ -23,14 +20,12 @@ fn test_add_mul() raises:
 
     # Pytorch check
     var torch = Python.import_module("torch")
-    var t_start = now()
     var ta: PythonObject = torch.Tensor([2]).double()
     ta.requires_grad = True
     var tb: PythonObject = torch.Tensor([-3]).double()
     var tc: PythonObject = torch.Tensor([10]).double()
     var td: PythonObject = ta * tb + tc
     td.backward()
-    print("Pytorch time:", now() - t_start, "ns")
     assert_equal(
         d.data.get_data_copy(),
         NumericFloat32(atof(td.data.item())),
@@ -110,13 +105,7 @@ fn test_add_mul_relu() raises:
     var b = Value(NumericFloat32(6.0))
     var c = Value(NumericFloat32(10.0))
     var d = a * b + c
-
-    var d1 = d.relu()
-
-    # Works
-    var e = d1 * d1
-    # Doesn't work
-    # var e = d.relu() * d.relu()
+    var e = d.relu() * d.relu()
 
     e.backward()
 
@@ -142,15 +131,19 @@ fn test_add_mul_relu() raises:
 
 
 fn test_sanity_check() raises:
+    print("Runnning test sanity check with profiling...")
     # Micograd
+    var m_start = now()
     var x = Value(NumericFloat32(-4.0))
     var z = (Value(NumericFloat32(2.0)) * x) + Value(NumericFloat32(2.0)) + x
     var q = z.relu() + (z * x)
     var h = (z * z).relu()
     var y = h + q + (q * x)
     y.backward()
+    print("Micograd time:", now() - m_start, "ns")
 
     var torch = Python.import_module("torch")
+    var t_start = now()
     var tx: PythonObject = torch.Tensor([-4.0]).double()
     tx.requires_grad = True
     var tz: PythonObject = (torch.Tensor([2]).double() * tx) + torch.Tensor(
@@ -160,6 +153,7 @@ fn test_sanity_check() raises:
     var th = (tz * tz).relu()
     var ty = th + tq + (tq * tx)
     ty.backward()
+    print("Pytorch time:", now() - t_start, "ns")
 
     assert_equal(
         y.data.get_data_copy(),
@@ -178,4 +172,4 @@ fn all_test_value() raises:
     test_add_mul_brackets()
     test_add_mul_pow()
     test_add_mul_relu()
-    # test_sanity_check()
+    test_sanity_check()
