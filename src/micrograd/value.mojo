@@ -142,15 +142,16 @@ struct Value[T: Numeric](KeyElement, Stringable):
             var current = stack.pop()
             if current not in visited:
                 visited.add(current)
-                # Note, is this topological sort correct
+                # Note, test - is this topological sort correct?
                 topo.append(current)
                 for child in current._prev.ptr[].data:
-                    stack.append(child[])
+                    if child[] not in visited:
+                        stack.append(child[])
 
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
-            # print("\nApplying chain rule to:\n", v[])  # Debugging
+            print("\nApplying chain rule to:\n", v[])  # Debugging
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:

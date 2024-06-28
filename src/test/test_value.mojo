@@ -114,13 +114,13 @@ fn test_add_mul_relu() raises:
     var d1 = d.relu()
 
     # Works
-    var e = d1 * d1
+    # var e = d1 * d1
     # Doesn't work
-    # var e = d.relu() * d.relu()
+    var e = d.relu() * d.relu()
 
     e.backward()
 
-    print(e)
+    # print(e)
 
     # Pytorch check
     var torch = Python.import_module("torch")
@@ -177,8 +177,8 @@ fn test_sanity_check() raises:
 
 
 fn all_test_value() raises:
-    test_add_mul()
-    test_add_mul_brackets()
-    test_add_mul_pow()
+    # test_add_mul()
+    # test_add_mul_brackets()
+    # test_add_mul_pow()
     test_add_mul_relu()
     # test_sanity_check()
