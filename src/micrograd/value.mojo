@@ -18,6 +18,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
     Value using reference semantics for equality (e.g pointer equality not data equality).
     Normal copy operations will only copy (and increment counts) of the reference counted pointer data in the node.
     TODO: add a clone() which can create deep copies of the graph rooted at this node.
+    TODO: add support for diamond graphs e.g. resnet (multiple parents to a node). Currently the graph has to be a DAG Tree.
     """
 
     var data: RC[T]
@@ -142,7 +143,6 @@ struct Value[T: Numeric](KeyElement, Stringable):
             var current = stack.pop()
             if current not in visited:
                 visited.add(current)
-                # Note, test - is this topological sort correct?
                 topo.append(current)
                 for child in current._prev.ptr[].data:
                     if child[] not in visited:
@@ -151,7 +151,7 @@ struct Value[T: Numeric](KeyElement, Stringable):
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
         for v in topo:
-            print("\nApplying chain rule to:\n", v[])  # Debugging
+            # print("\nApplying chain rule to:\n", v[])  # Debugging
             v[]._backward()
 
     fn __hash__(self: Self) -> Int:
@@ -177,8 +177,19 @@ struct Value[T: Numeric](KeyElement, Stringable):
         return self.pretty_print(0)
 
     fn pretty_print(self: Self, indent: Int) -> String:
+        var val = str(self.data.ptr[])
+                + " ("
+                + str(self.data.ptr)
+                + ")"
+                + " (∇"
+                + str(self.grad.ptr[])
+                + ")"
+                + " ("
+                + str(self.grad.ptr)
+                + ")"
+
         if len(self._prev.ptr[].data) == 0:
-            return str(self.data.ptr[]) + " (∇" + str(self.grad.ptr[]) + ")"
+            return val
 
         var prev = String()
         prev += "\n" + String(" ") * indent + "| " + self._op
@@ -189,4 +200,4 @@ struct Value[T: Numeric](KeyElement, Stringable):
                 + "| "
                 + element[].pretty_print(indent + 1)
             )
-        return str(self.data.ptr[]) + " (∇" + str(self.grad.ptr[]) + ")" + prev
+        return val + prev

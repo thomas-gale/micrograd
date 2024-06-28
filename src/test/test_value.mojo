@@ -108,28 +108,25 @@ fn test_add_mul_pow() raises:
 fn test_add_mul_relu() raises:
     var a = Value(NumericFloat32(2.0))
     var b = Value(NumericFloat32(6.0))
-    # var c = Value(NumericFloat32(10.0))
-    var d = a * b
+    var c = Value(NumericFloat32(10.0))
+    var d = a * b + c
 
     var d1 = d.relu()
 
     # Works
-    # var e = d1 * d1
+    var e = d1 * d1
     # Doesn't work
-    var e = d.relu() * d.relu()
+    # var e = d.relu() * d.relu()
 
     e.backward()
-
-    # print(e)
 
     # Pytorch check
     var torch = Python.import_module("torch")
     var ta: PythonObject = torch.Tensor([2]).double()
     ta.requires_grad = True
     var tb: PythonObject = torch.Tensor([6]).double()
-    # var tc: PythonObject = torch.Tensor([10]).double()
-    # var td: PythonObject = ta * tb + tc
-    var td: PythonObject = ta * tb
+    var tc: PythonObject = torch.Tensor([10]).double()
+    var td: PythonObject = ta * tb + tc
     var te: PythonObject = td.relu() * td.relu()
     te.backward()
     assert_equal(
@@ -177,8 +174,8 @@ fn test_sanity_check() raises:
 
 
 fn all_test_value() raises:
-    # test_add_mul()
-    # test_add_mul_brackets()
-    # test_add_mul_pow()
+    test_add_mul()
+    test_add_mul_brackets()
+    test_add_mul_pow()
     test_add_mul_relu()
     # test_sanity_check()

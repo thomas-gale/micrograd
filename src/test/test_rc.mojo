@@ -57,26 +57,8 @@ fn test_rc_move() raises:
     move_into_test(rc^)
 
 
-# fn test_rc_capture() raises:
-#     var rc = RC[Float32](8.8)
-
-#     fn capture() escaping:
-#         var rc2 = rc
-#         print()
-#         # assert_almost_equal(
-#         #     rc2.get_data_copy(), 8.8, msg="RC data not initialized correctly"
-#         # )
-#         # assert_equal(
-#         #     rc2.get_ref_count(), 2, msg="RC ref_count not initialized correctly"
-#         # )
-
-
-#     pass
-
-
 fn all_test_rc() raises:
     test_rc_init_data()
     test_rc_init_ptr()
     test_rc_multiple_refs()
     test_rc_move()
-    # test_rc_capture()
