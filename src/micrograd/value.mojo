@@ -131,23 +131,38 @@ struct Value[T: Gradable](KeyElement, Stringable):
         return out
 
     fn backward(owned self):
-        # topological order all of the children in the graph
+        # Topological order all of the children in the graph - iterative implementation of topological sort, simulating a call stack
         var topo = List[Self]()
         var visited = Set[Self]()
-        # iterative implementation of bfs
-        var queue = List[Self]()
-        queue.append(self)
-        while not len(queue) == 0:
-            var current = queue.pop(0)
-            if current not in visited:
-                visited.add(current)
+        var stack = List[Self]()
+
+        # Two lists rather than a tuple to avoid the need for a collection element type for the tuple
+        var current_call_stack = List[Self]()  # A stack to manage the recursive call states
+        var processed_call_stack = List[Bool]()  # A stack to manage the recursive call states
+
+        stack.append(self)
+        current_call_stack.append(self)
+        processed_call_stack.append(False)
+        while not len(current_call_stack) == 0:
+            var current = current_call_stack.pop()
+            var processed = processed_call_stack.pop()
+            if processed:
                 topo.append(current)
-                for child in current._prev.ptr[].data:
-                    queue.append(child[])
+            else:
+                if current not in visited:
+                    visited.add(current)
+                    current_call_stack.append(current)
+                    processed_call_stack.append(True)
+                    for child in reversed(current._prev.ptr[].data):  # Reverse to maintain order
+                        if child[] not in visited:
+                            stack.append(child[])
+                            current_call_stack.append(child[])
+                            processed_call_stack.append(False)
+
 
         # Go one variable at a time and apply the chain rule to get its gradient
         self.grad.ptr[] = T.one()
-        for v in topo:
+        for v in reversed(topo):
             # print("\nApplying chain rule to:\n", v[])  # Debugging
             v[]._backward()
 
@@ -175,11 +190,6 @@ struct Value[T: Gradable](KeyElement, Stringable):
 
     fn __radd__(owned self: Self, owned other: Self) -> Self:
         return self + other
-
-    fn __iadd__(owned self: Self, owned other: Self):
-        var out = self + other
-        self = out
-        # self.data += other.data
 
     fn __sub__(owned self: Self, owned other: Self) -> Self:
         return self + (-other)
