@@ -10,7 +10,7 @@ run:
 	poetry run mojo run src/main.mojo
 
 test: 
-	poetry run mojo run src/tests.mojo
+	poetry run mojo test -I src test
 
 package:
 	mkdir -p bin
